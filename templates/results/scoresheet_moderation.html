@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .moderation-card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: white;
+        margin-bottom: 24px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .moderation-card:hover {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-md);
+    }
+    .card-meta {
+        font-size: 13px;
+        color: var(--text-muted);
+        display: flex;
+        gap: 16px;
+        margin-top: 4px;
+    }
+    .status-pill {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(1,51,104,0.55);
+        backdrop-filter: blur(3px);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom:24px;">
+    <div>
+        <h1 class="page-title">Result Moderation</h1>
+        <p class="page-subtitle">Queue for {{ role_label }} — Monitoring <strong>{{ target_status }}</strong> bundles.</p>
+    </div>
+</div>
+
+{% if not scoresheets %}
+<div class="card" style="text-align:center;padding:60px 20px;">
+    <div style="background:var(--color-primary-pale);width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <i data-lucide="check-square" style="width:40px;height:40px;color:var(--color-primary);"></i>
+    </div>
+    <h3>Moderation Queue Clear!</h3>
+    <p style="color:var(--text-muted);max-width:400px;margin:0 auto;">No scoresheets are currently awaiting your action for this level.</p>
+</div>
+{% else %}
+
+<form method="post" id="moderation-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="form-action" value="approve">
+    
+    <div style="display:flex;justify-content:between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-grow:1;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;">
+                <input type="checkbox" id="check-all" onchange="toggleAll(this)"> 
+                Select All
+            </label>
+            <span id="selected-count" style="font-size:12px;color:var(--color-primary);font-weight:600;display:none;">
+                (0 selected)
+            </span>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <button type="button" class="btn btn-outline" onclick="openRejectionModal()" style="color:var(--color-danger);border-color:var(--color-danger);">
+                <i data-lucide="corner-up-left" style="width:16px;height:16px;margin-right:8px;"></i> Return to Lecturer
+            </button>
+            <button type="submit" class="btn btn-primary" onclick="setAction('approve')">
+                <i data-lucide="shield-check" style="width:16px;height:16px;margin-right:8px;"></i> 
+                {% if target_status == 'pending_registrar' %}Publish Results{% else %}Approve Selection{% endif %}
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;"></th>
+                    <th>Course Bundle</th>
+                    <th>Lecturer</th>
+                    <th>Academic Session</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sheet in scoresheets %}
+                <tr>
+                    <td>
+                        <input type="checkbox" name="scoresheet_ids" value="{{ sheet.pk }}" class="sheet-checkbox" onchange="updateCount()">
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">{{ sheet.course_allocation.course_code }}</div>
+                        <div style="font-size:12px;color:var(--text-muted);">{{ sheet.course_allocation.course_title }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size:13px;">{{ sheet.uploaded_by.get_full_name }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size:13px;">{{ sheet.academic_year }} — {{ sheet.get_semester_display }}</div>
+                    </td>
+                    <td>
+                        <span class="badge badge-warning" style="font-size:10px;">{{ sheet.get_status_display }}</span>
+                    </td>
+                    <td style="text-align:right;">
+                        <a href="{% url 'portal:score_entry' %}?allocation={{ sheet.course_allocation.pk }}" class="btn btn-sm btn-outline" title="Review Scores">
+                            <i data-lucide="eye" style="width:14px;height:14px;"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Rejection Modal #}
+    <div id="rejection-modal" class="modal-overlay" style="display:none;">
+        <div class="card" style="width:100%;max-width:400px;margin:20px;">
+            <div class="card-header"><span class="card-title">Return Scoresheet</span></div>
+            <div class="card-body">
+                <p style="font-size:13px;margin-bottom:12px;color:var(--color-danger);">Please state why these scores are being returned for correction.</p>
+                <textarea name="rejection_reason" class="form-control" rows="4" placeholder="e.g. Discrepancy in CA scores, missing grades for 5 students..."></textarea>
+                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+                    <button type="button" class="btn btn-outline" onclick="closeRejectionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="background:var(--color-danger);border-color:var(--color-danger);" onclick="setAction('reject')">Return Selection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endif %}
+
+<script>
+    function toggleAll(source) {
+        checkboxes = document.getElementsByName('scoresheet_ids');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }
+        updateCount();
+    }
+
+    function updateCount() {
+        var checked = document.querySelectorAll('input[name="scoresheet_ids"]:checked').length;
+        var countSpan = document.getElementById('selected-count');
+        if (checked > 0) {
+            countSpan.textContent = '(' + checked + ' selected)';
+            countSpan.style.display = 'inline';
+        } else {
+            countSpan.style.display = 'none';
+        }
+    }
+
+    function setAction(act) {
+        document.getElementById('form-action').value = act;
+    }
+
+    function openRejectionModal() {
+        var checked = document.querySelectorAll('input[name="scoresheet_ids"]:checked').length;
+        if (checked === 0) {
+            alert('Please select at least one scoresheet.');
+            return;
+        }
+        document.getElementById('rejection-modal').style.display = 'flex';
+    }
+
+    function closeRejectionModal() {
+        document.getElementById('rejection-modal').style.display = 'none';
+    }
+</script>
+{% endblock %}

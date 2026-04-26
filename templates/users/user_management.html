@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block page_title %}User Management{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div><h2 style="font-size:20px; font-weight:700;">User Management</h2><p style="color:var(--text-muted); font-size:14px;">Manage all portal accounts and roles</p></div>
+  <a href="#" class="btn btn-primary"><i data-lucide="user-plus" style="width:16px;height:16px;"></i> Add User</a>
+</div>
+
+<!-- Filters -->
+<form method="get" class="card mb-4">
+  <div class="card-body" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+    <div class="form-group" style="margin:0; flex:1; min-width:200px;">
+      <label class="form-label">Search</label>
+      <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Name, username, email...">
+    </div>
+    <div class="form-group" style="margin:0; min-width:160px;">
+      <label class="form-label">Filter by Role</label>
+      <select name="role" class="form-control">
+        <option value="">All Roles</option>
+        {% for val, label in role_choices %}<option value="{{ val }}" {% if role_filter == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">🔍 Search</button>
+    <a href="{% url 'portal:user_management' %}" class="btn btn-outline">✕ Clear</a>
+  </div>
+</form>
+
+<!-- User Table -->
+<div class="card">
+  <div class="card-header"><span class="card-title">Users ({{ users|length }} shown)</span></div>
+  <div class="card-body" style="padding:0;">
+    <div class="table-container" style="border:none; border-radius:0;">
+      <table>
+        <thead><tr><th>Name</th><th>Username</th><th>Matric No.</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="avatar" style="width:32px;height:32px;font-size:12px;">{{ u.first_name|first|default:u.username|first|upper }}</div>
+                <span style="font-weight:500;">{{ u.get_full_name|default:u.username }}</span>
+              </div>
+            </td>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:13px;">{{ u.username }}</td>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+              {% if u.role == 'student' %}
+                {{ u.student_profile.matriculation_number|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td><span class="role-badge {{ u.get_role_badge_color }}">{{ u.get_role_display }}</span></td>
+            <td style="color:var(--text-muted); font-size:13px;">{{ u.email|default:"—" }}</td>
+            <td>
+              {% if u.is_locked %}<span class="badge badge-danger">🔒 Locked</span>
+              {% elif u.is_active %}<span class="badge badge-success">Active</span>
+              {% else %}<span class="badge badge-neutral">Inactive</span>{% endif %}
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <!-- Lock/Unlock -->
+                <form method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="user_id" value="{{ u.pk }}">
+                  <input type="hidden" name="action" value="{% if u.is_locked %}unlock{% else %}lock{% endif %}">
+                  <button type="submit" class="btn btn-sm {% if u.is_locked %}btn-secondary{% else %}btn-danger{% endif %}"
+                    onclick="return confirm('{% if u.is_locked %}Unlock{% else %}Lock{% endif %} {{ u.username }}?')">
+                    {% if u.is_locked %}🔓{% else %}🔒{% endif %}
+                  </button>
+                </form>
+                <!-- Change Role -->
+                <button class="btn btn-sm btn-outline" onclick="showRoleModal('{{ u.pk }}', '{{ u.username }}', '{{ u.role }}')">↕ Role</button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-title">No users found</div></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Role Change Modal -->
+<div id="role-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center;">
+  <div class="card" style="width: 380px; padding: 0;">
+    <div class="card-header"><span class="card-title">Change Role</span><button onclick="document.getElementById('role-modal').style.display='none'" class="btn btn-ghost btn-icon btn-sm">✕</button></div>
+    <form method="post" class="card-body">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="change_role">
+      <input type="hidden" name="user_id" id="modal-user-id">
+      <p style="margin-bottom:14px; color:var(--text-muted); font-size:14px;">Changing role for: <strong id="modal-username"></strong></p>
+      <div class="form-group">
+        <label class="form-label">New Role</label>
+        <select name="new_role" id="modal-new-role" class="form-control">
+          {% for val, label in role_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('role-modal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Role</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showRoleModal(userId, username, currentRole) {
+  document.getElementById('modal-user-id').value = userId;
+  document.getElementById('modal-username').textContent = username;
+  document.getElementById('modal-new-role').value = currentRole;
+  document.getElementById('role-modal').style.display = 'flex';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base_auth.html" %}
+{% block page_title %}403 — Access Denied{% endblock %}
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
+  <div style="text-align:center;padding:48px 24px;max-width:400px;">
+    <div style="font-size:80px;margin-bottom:16px;">🚫</div>
+    <h1 style="font-size:32px;font-weight:700;color:var(--color-danger);margin-bottom:8px;">Access Denied</h1>
+    <p style="font-size:15px;color:var(--text-muted);line-height:1.6;margin-bottom:24px;">You don't have permission to access this page. If you believe this is an error, contact the ICT Director.</p>
+    <a href="{% url 'portal:dashboard' %}" class="btn btn-primary">← Return to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

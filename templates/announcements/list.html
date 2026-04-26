@@ -1,0 +1,43 @@
+{% extends base_template|default:"base.html" %}
+{% block page_title %}Announcements{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div><h2 style="font-size:20px;font-weight:700;">📣 Announcements</h2><p style="color:var(--text-muted);font-size:14px;">University-wide and role-specific notices</p></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;">
+  {% if notices %}
+  {% for n in notices %}
+  <div class="card" style="border-left: 4px solid {% if n.priority == 'urgent' %}var(--color-danger){% elif n.priority == 'high' %}var(--color-warning){% else %}var(--color-primary-light){% endif %};">
+    <div class="card-body" style="display:flex;gap:16px;">
+      <span style="font-size:26px;flex-shrink:0;">
+        {% if n.notification_type == 'warning' %}⚠️
+        {% elif n.notification_type == 'success' %}✅
+        {% elif n.notification_type == 'announcement' %}📢
+        {% elif n.notification_type == 'error' %}🚨
+        {% else %}ℹ️{% endif %}
+      </span>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:15px;font-weight:600;">{{ n.title }}</span>
+          {% if n.priority == 'urgent' %}<span class="badge badge-danger">URGENT</span>
+          {% elif n.priority == 'high' %}<span class="badge badge-warning">HIGH</span>{% endif %}
+          {% if not n.is_read %}<span class="badge badge-info">NEW</span>{% endif %}
+        </div>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;">{{ n.message }}</p>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-muted);">
+          {{ n.created_at|date:"d M Y, H:i" }} · {{ n.get_notification_type_display }}
+          {% if n.sender %} · From: {{ n.sender.get_full_name|default:n.sender.username }}{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">🔔</div>
+    <div class="empty-state-title">No announcements at this time</div>
+    <div class="empty-state-desc">Check back later for updates from the university.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

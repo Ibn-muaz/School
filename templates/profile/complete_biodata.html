@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block page_title %}Complete Your Biodata{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 style="font-size: 28px; font-weight: 700; color: #0D1B2A; margin: 0 0 8px 0;">
+            Complete Your Biodata
+        </h1>
+        <p style="color: #546E7A; margin: 0;">
+            Welcome! Please complete your biodata to activate your account on the portal.
+        </p>
+    </div>
+
+    <!-- Progress Indicator -->
+    {% if is_first_login %}
+    <div class="card mb-6">
+        <div class="card-body">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin: 0; color: #0D1B2A; font-size: 16px; font-weight: 600;">
+                        Account Activation Required
+                    </h3>
+                    <p style="color: #546E7A; margin: 8px 0 0 0; font-size: 14px;">
+                        Your account is pending biodata completion. Complete the form below to activate your access.
+                    </p>
+                </div>
+                <div style="background: #FFF3E0; color: #E65100; padding: 12px 16px; border-radius: 6px; font-weight: 600;">
+                    ⚠️ Pending
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Biodata Form Card -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Personal & Academic Information</span>
+        </div>
+        
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="card-body">
+                <!-- Matriculation Number -->
+                <div class="form-group">
+                    <label class="form-label">Matriculation Number</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        value="{{ student_profile.matriculation_number }}" 
+                        readonly 
+                        disabled
+                    />
+                    <div class="form-hint">This is your login username. It cannot be changed.</div>
+                </div>
+
+                <!-- Name Section -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">First Name <span class="required">*</span></label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div class="form-error">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Last Name <span class="required">*</span></label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="form-error">{{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="form-error">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                            <div class="form-error">{{ form.phone_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Academic Information (Read-only) -->
+                <hr style="border: none; border-top: 1px solid #BBDEFB; margin: 24px 0;">
+
+                <h4 style="margin: 0 0 16px 0; color: #0D1B2A; font-size: 14px; font-weight: 600; text-transform: uppercase;">
+                    Academic Information (Auto-filled)
+                </h4>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        {{ form.department }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Level</label>
+                        {{ form.level }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Faculty</label>
+                        {{ form.faculty }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Program</label>
+                        {{ form.program }}
+                    </div>
+                </div>
+
+                <!-- Location Information -->
+                <hr style="border: none; border-top: 1px solid #BBDEFB; margin: 24px 0;">
+
+                <h4 style="margin: 0 0 16px 0; color: #0D1B2A; font-size: 14px; font-weight: 600; text-transform: uppercase;">
+                    Location Information
+                </h4>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Nationality</label>
+                        {{ form.nationality }}
+                        {% if form.nationality.errors %}
+                            <div class="form-error">{{ form.nationality.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">State of Origin</label>
+                        {{ form.state_of_origin }}
+                        {% if form.state_of_origin.errors %}
+                            <div class="form-error">{{ form.state_of_origin.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Local Government Area</label>
+                    {{ form.local_government }}
+                    {% if form.local_government.errors %}
+                        <div class="form-error">{{ form.local_government.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- General Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-error" style="margin-top: 16px;">
+                        {% for error in form.non_field_errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Form Actions -->
+            <div class="card-footer" style="padding: 16px 20px; border-top: 1px solid #BBDEFB; display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="check"></i> Save & Activate Account
+                </button>
+                <a href="{% url 'portal:dashboard' %}" class="btn btn-outline">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Information Box -->
+    <div class="alert alert-info" style="margin-top: 20px;">
+        <span>ℹ️</span>
+        <div>
+            <strong>What's Next?</strong><br>
+            After completing your biodata, you can:
+            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li>Register for courses</li>
+                <li>View exam results</li>
+                <li>Check fee status</li>
+                <li>Access hostel information</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.required {
+    color: #C62828;
+}
+</style>
+{% endblock %}

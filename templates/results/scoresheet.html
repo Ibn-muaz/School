@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block page_title %}Scoresheet{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div><h2 style="font-size:20px;font-weight:700;">Scoresheet Management</h2><p style="color:var(--text-muted);font-size:14px;">Review and approve submitted score sheets</p></div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="card-title">Submitted Scoresheets</span></div>
+  <div class="card-body" style="padding:0;">
+    {% if scoresheets %}
+    <table>
+      <thead><tr><th>Course</th><th>Lecturer</th><th>Session</th><th>Semester</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for s in scoresheets %}
+        <tr>
+          <td><strong>{{ s.course_allocation.course_code }}</strong><div style="font-size:12px;color:var(--text-muted);">{{ s.course_allocation.course_title|truncatechars:30 }}</div></td>
+          <td>{{ s.uploaded_by.get_full_name|default:s.uploaded_by.username }}</td>
+          <td>{{ s.academic_year }}</td>
+          <td>{{ s.get_semester_display }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ s.uploaded_at|date:"d M Y H:i" }}</td>
+          <td>
+            {% if s.status == 'approved' %}<span class="badge badge-success">✓ Approved</span>
+            {% elif s.status == 'submitted' %}<span class="badge badge-warning">⏳ Pending</span>
+            {% elif s.status == 'rejected' %}<span class="badge badge-danger">✗ Rejected</span>
+            {% else %}<span class="badge badge-neutral">Draft</span>{% endif %}
+          </td>
+          <td>
+            {% if s.status == 'submitted' %}
+            <div style="display:flex;gap:6px;">
+              <form method="post" style="display:inline;">{% csrf_token %}<input type="hidden" name="scoresheet_id" value="{{ s.pk }}"><input type="hidden" name="action" value="approve"><button class="btn btn-secondary btn-sm" onclick="return confirm('Approve this scoresheet?')">✓ Approve</button></form>
+              <form method="post" style="display:inline;">{% csrf_token %}<input type="hidden" name="scoresheet_id" value="{{ s.pk }}"><input type="hidden" name="action" value="reject"><input type="hidden" name="notes" value="Rejected by reviewer"><button class="btn btn-danger btn-sm" onclick="return confirm('Reject this scoresheet?')">✗ Reject</button></form>
+            </div>
+            {% elif s.status == 'approved' %}<span style="font-size:12px;color:var(--text-muted);">Approved by {{ s.approved_by.username|default:"—" }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty-state"><div class="empty-state-icon">📄</div><div class="empty-state-title">No scoresheets submitted yet</div></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

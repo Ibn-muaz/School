@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block page_title %}{{ request.user.get_role_display }} Dashboard{% endblock %}
+{% block content %}
+<div class="welcome-banner" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);">
+  <div>
+    <div class="welcome-title">Executive Overview <i data-lucide="crown" class="inline-block w-6 h-6 ml-1"></i></div>
+    <div class="welcome-subtitle">{{ request.user.get_role_display }} — Institutional Insight & Oversight</div>
+  </div>
+</div>
+
+<div class="grid-stats mb-6">
+  <div class="stat-card">
+    <div class="stat-icon blue"><i data-lucide="graduation-cap"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value">{{ total_students }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon teal"><i data-lucide="users"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Staff</div>
+      <div class="stat-value">{{ total_staff }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><i data-lucide="book"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Active Courses</div>
+      <div class="stat-value">{{ total_courses }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i data-lucide="banknote"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Payments</div>
+      <div class="stat-value">{{ total_payments }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="quick-actions mb-8">
+  <a href="{% url 'portal:reports' %}" class="quick-action-btn">
+    <span class="quick-action-icon"><i data-lucide="bar-chart-3"></i></span>
+    <span class="quick-action-label">Academic Reports</span>
+  </a>
+  <a href="{% url 'portal:user_management' %}" class="quick-action-btn">
+    <span class="quick-action-icon"><i data-lucide="users"></i></span>
+    <span class="quick-action-label">User Directory</span>
+  </a>
+  <a href="{% url 'portal:fee_management' %}" class="quick-action-btn">
+    <span class="quick-action-icon"><i data-lucide="wallet"></i></span>
+    <span class="quick-action-label">Financial Summary</span>
+  </a>
+  <a href="{% url 'portal:announcements' %}" class="quick-action-btn">
+    <span class="quick-action-icon"><i data-lucide="megaphone"></i></span>
+    <span class="quick-action-label">Broadcast Message</span>
+  </a>
+</div>
+
+<!-- Detailed Lists Section -->
+<div class="card mb-8">
+    <div class="card-header flex-between">
+        <span class="card-title"><i data-lucide="users" class="inline-block w-5 h-5 mr-1"></i> Institutional User Directory</span>
+        <div class="flex gap-2">
+            <button onclick="showTab('users')" id="btn-users" class="btn btn-sm btn-primary">All Users</button>
+            <button onclick="showTab('recent')" id="btn-recent" class="btn btn-sm btn-outline">
+                Recent Signups {% if recent_signups.count > 0 %}<span class="notif-badge" style="position:static; margin-left:5px;">{{ recent_signups.count }}</span>{% endif %}
+            </button>
+            <button onclick="showTab('students')" id="btn-students" class="btn btn-sm btn-outline">Students</button>
+            <button onclick="showTab('staff')" id="btn-staff" class="btn btn-sm btn-outline">Staff</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <!-- All Users Tab -->
+        <div id="tab-users" class="tab-content">
+            <div class="table-container no-border">
+                <table>
+                    <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for u in all_users %}
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="avatar-sm">{{ u.first_name|first|upper }}</div>
+                                    <span class="font-medium">{{ u.get_full_name|default:u.username }}</span>
+                                </div>
+                            </td>
+                            <td class="font-mono text-xs">{{ u.username }}</td>
+                            <td><span class="role-badge {{ u.get_role_badge_color }}">{{ u.get_role_display }}</span></td>
+                            <td>{% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-neutral">Inactive</span>{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Students Tab -->
+        <div id="tab-students" class="tab-content hidden">
+            <div class="table-container no-border">
+                <table>
+                    <thead><tr><th>Name</th><th>Matric No.</th><th>Department</th><th>Level</th></tr></thead>
+                    <tbody>
+                        {% for s in student_list %}
+                        <tr>
+                            <td><span class="font-medium">{{ s.user.get_full_name }}</span></td>
+                            <td class="font-mono text-xs">{{ s.matriculation_number }}</td>
+                            <td>{{ s.department_code }}</td>
+                            <td>{{ s.level }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Staff Tab -->
+        <div id="tab-staff" class="tab-content hidden">
+            <div class="table-container no-border">
+                <table>
+                    <thead><tr><th>Name</th><th>Staff ID</th><th>Role</th><th>Department</th></tr></thead>
+                    <tbody>
+                        {% for s in staff_list %}
+                        <tr>
+                            <td><span class="font-medium">{{ s.user.get_full_name }}</span></td>
+                            <td class="font-mono text-xs">{{ s.staff_id }}</td>
+                            <td>{{ s.user.get_role_display }}</td>
+                            <td>{{ s.department_code|default:"Administration" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabId) {
+    // Hide all contents
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    // Show selected
+    document.getElementById('tab-' + tabId).classList.remove('hidden');
+    
+    // Reset buttons
+    document.querySelectorAll('.card-header .btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline');
+    });
+    // Active button
+    document.getElementById('btn-' + tabId).classList.add('btn-primary');
+    document.getElementById('btn-' + tabId).classList.remove('btn-outline');
+}
+</script>
+
+<style>
+    .hidden { display: none; }
+    .avatar-sm { width: 32px; height: 32px; background: var(--bg-page); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--color-primary); }
+    .table-container.no-border { border: none; border-radius: 0; }
+</style>
+{% endblock %}

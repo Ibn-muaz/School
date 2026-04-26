@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block page_title %}Student Portal{% endblock %} - {{ college_name|default:"SANGA Portal"|truncatechars:20 }}</title>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0288d1;
+            --dark-blue: #01579b;
+            --light-blue-bg: #f0f9ff;
+            --text-dark: #334155;
+            --text-muted: #64748b;
+            --border-color: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .custom-sidebar {
+            width: 260px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1001;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header img {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: white;
+            padding: 3px;
+            object-fit: contain;
+        }
+
+        .sidebar-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-group {
+            margin-bottom: 25px;
+        }
+
+        .nav-title {
+            padding: 0 25px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            border-right: 4px solid transparent;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border-right-color: white;
+        }
+
+        /* ── MAIN AREA ── */
+        .dashboard-main {
+            flex: 1;
+            margin-left: 260px;
+            padding-bottom: 50px;
+            transition: margin 0.3s ease;
+        }
+
+        .custom-topbar {
+            background: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .topbar-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-profile img, .topbar-profile .avatar-placeholder {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .topbar-profile .avatar-placeholder {
+            background: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .topbar-profile span {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        .page-content {
+            padding: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ── COMMON UI COMPONENTS ── */
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .card-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .paid-badge {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1024px) {
+            .custom-sidebar { transform: translateX(-100%); }
+            .dashboard-main { margin-left: 0; }
+            .mobile-toggle { display: block; }
+            .sidebar-active .custom-sidebar { transform: translateX(0); }
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+    <div id="app-viewport" style="display:flex;">
+        <!-- Sidebar -->
+        <aside class="custom-sidebar">
+            <div class="sidebar-header">
+                <img src="{% static 'img/logo.png' %}" alt="Logo">
+                <h2>SANGA</h2>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-title">Menu</div>
+                <ul class="nav-list">
+                    <li><a href="{% url 'portal:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a href="{% url 'portal:student_fees' %}" class="nav-link {% if 'fee' in request.path %}active{% endif %}"><i class="fas fa-money-bill-wave"></i> Fees</a></li>
+                    <li><a href="{% url 'portal:profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}"><i class="fas fa-user-circle"></i> Bio Data</a></li>
+                    <li><a href="{% url 'portal:course_registration' %}" class="nav-link {% if 'registration' in request.path %}active{% endif %}"><i class="fas fa-check-double"></i> Course Reg</a></li>
+                    <li><a href="{% url 'portal:student_results' %}" class="nav-link {% if 'results' in request.path %}active{% endif %}"><i class="fas fa-chart-line"></i> Exam Results</a></li>
+                    <li><a href="{% url 'portal:timetable' %}" class="nav-link {% if 'timetable' in request.path %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Time Table</a></li>
+                    <li><a href="{% url 'hostels:student_dashboard' %}" class="nav-link {% if 'hostel' in request.path %}active{% endif %}"><i class="fas fa-hotel"></i> Hostel</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-title">Account</div>
+                <ul class="nav-list">
+                    <li><a href="{% url 'portal:change_password' %}" class="nav-link"><i class="fas fa-lock"></i> Security</a></li>
+                    <li><a href="{% url 'portal:logout' %}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="custom-topbar">
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-profile">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile">
+                    {% else %}
+                        <div class="avatar-placeholder">{{ user.first_name|first|upper }}</div>
+                    {% endif %}
+                    <span>{{ user.get_full_name|default:user.username }}</span>
+                </div>
+            </header>
+
+            <div class="page-content">
+                {% if messages %}
+                <div class="messages-container" style="margin-bottom: 20px;">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: {% if message.tags == 'success' %}#dcfce7; color: #166534;{% else %}#fee2e2; color: #991b1b;{% endif %} border: 1px solid currentColor; font-size: 14px;">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-active');
+        }
+
+        // Close sidebar on desktop resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                document.body.classList.remove('sidebar-active');
+            }
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

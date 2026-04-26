@@ -1,0 +1,31 @@
+{% with request.resolver_match.url_name as url_name %}
+<div class="sidebar-section-label">Institutional Oversight</div>
+<a href="{% url 'portal:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="shield-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Executive Panel</span><span class="nav-tooltip">Executive Panel</span>
+</a>
+<a href="{% url 'portal:reports' %}" class="nav-item {% if url_name == 'reports' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="trending-up" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">College Statics</span><span class="nav-tooltip">Statistics</span>
+</a>
+<a href="{% url 'portal:announcements' %}" class="nav-item {% if url_name == 'announcements' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="megaphone" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Global Broadcast</span><span class="nav-tooltip">Broadcast</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Financial Oversight</div>
+<a href="{% url 'portal:fee_management' %}" class="nav-item {% if url_name == 'fee_management' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="wallet" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Bursary Overview</span><span class="nav-tooltip">Bursary Overview</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="fingerprint" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Credentials</span><span class="nav-tooltip">Profile</span>
+</a>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);" onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Exit Portal</span><span class="nav-tooltip">Logout</span>
+</a>
+{% endwith %}

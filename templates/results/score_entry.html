@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block page_title %}Score Entry{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;">✏️ Score Entry</h2>
+    <p style="color:var(--text-muted);font-size:14px;">Enter CA and Examination scores for your students</p>
+  </div>
+</div>
+
+<!-- Course Selector -->
+<div class="card mb-4">
+  <div class="card-header"><span class="card-title">Select Course</span></div>
+  <div class="card-body">
+    <form method="get" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="form-group" style="margin:0;flex:1;min-width:200px;">
+        <label class="form-label">Choose a Course Allocation</label>
+        <select name="allocation" class="form-control" onchange="this.form.submit()">
+          <option value="">— Select course —</option>
+          {% for a in allocations %}
+          <option value="{{ a.pk }}" {% if selected_allocation and selected_allocation.pk == a.pk %}selected{% endif %}>
+            {{ a.course_code }} — {{ a.course_title }} ({{ a.get_semester_display }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if selected_allocation %}
+<!-- Score Entry Form -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <span class="card-title">{{ selected_allocation.course_code }} — {{ selected_allocation.course_title }}</span>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">CA Max: 40 | Exam Max: 60 | Total: 100</p>
+    </div>
+    <span class="badge badge-info">{{ students_results|length }} students</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if students_results %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="allocation_id" value="{{ selected_allocation.pk }}">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Matric No.</th>
+              <th>CA (Max 40)</th>
+              <th>Exam (Max 60)</th>
+              <th>Total</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in students_results %}
+            <tr>
+              <input type="hidden" name="student_ids" value="{{ r.student.pk }}">
+              <td>
+                <div style="font-weight:500;">{{ r.student.get_full_name|default:r.student.username }}</div>
+              </td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:13px;">
+                {{ r.student.username }}
+              </td>
+              <td>
+                <input type="number" name="ca_{{ r.student.pk }}" value="{{ r.continuous_assessment|default:'' }}"
+                  class="form-control" style="width:90px;" min="0" max="40" step="0.5"
+                  placeholder="0–40" {% if request.user.role != 'lecturer' %}readonly{% endif %}>
+              </td>
+              <td>
+                <input type="number" name="exam_{{ r.student.pk }}" value="{{ r.examination|default:'' }}"
+                  class="form-control" style="width:90px;" min="0" max="60" step="0.5"
+                  placeholder="0–60" {% if request.user.role != 'lecturer' %}readonly{% endif %}>
+              </td>
+              <td><strong>{{ r.total_score|default:"—" }}</strong></td>
+              <td>
+                {% if r.grade %}
+                  <span class="grade-{{ r.grade|lower }}" style="font-size:16px;">{{ r.grade }}</span>
+                {% else %}
+                  <span style="color:var(--text-muted);">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:16px;border-top:1px solid var(--border-color);display:flex;gap:12px;justify-content:flex-end;">
+      <div style="padding:16px;border-top:1px solid var(--border-color);display:flex;gap:12px;justify-content:flex-end;">
+        {% if request.user.role == 'lecturer' %}
+        <button type="reset" class="btn btn-outline">↺ Reset</button>
+        <button type="submit" name="action" value="save" class="btn btn-outline">💾 Save Draft</button>
+        <button type="submit" name="submit_moderation" value="1" class="btn btn-primary" onclick="return confirm('Ready to submit these scores for formal moderation? You will not be able to edit them until they are reviewed.')">
+            <i data-lucide="send" style="width:16px;height:16px;margin-right:6px;"></i> Submit for Moderation
+        </button>
+        {% else %}
+        <p style="color:var(--text-muted); font-size:13px; font-style:italic;">You are viewing these scores in <strong>Review Mode</strong>.</p>
+        {% endif %}
+      </div>
+      </div>
+    </form>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">👥</div>
+      <div class="empty-state-title">No students found for this course</div>
+      <div class="empty-state-desc">Students must register for the course before scores can be entered.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

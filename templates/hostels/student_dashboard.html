@@ -1,0 +1,330 @@
+{% extends 'base_student.html' %}
+{% load static %}
+{% block page_title %}Hostel & Accommodation{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hostel-hero {
+    background: linear-gradient(135deg, #0277BD 0%, #01579B 100%);
+    border-radius: 16px;
+    color: white;
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hostel-hero::after {
+    content: '';
+    position: absolute;
+    right: -40px; bottom: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #f1f5f9;
+  }
+  .stat-box .num { font-size: 28px; font-weight: 800; color: #0277BD; }
+  .stat-box .lbl { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+  .allocation-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 24px;
+    border: 1px solid #f1f5f9;
+  }
+  .allocation-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .allocation-header h3 { font-size: 16px; font-weight: 700; margin: 0; }
+  .status-pill {
+    padding: 4px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .pill-paid    { background: #dcfce7; color: #15803d; }
+  .pill-pending { background: #fef3c7; color: #92400e; }
+  .pill-none    { background: #f1f5f9; color: #64748b; }
+  .info-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 24px;
+  }
+  .info-item label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 4px; }
+  .info-item .val  { font-size: 15px; font-weight: 600; color: #1e293b; }
+  .hostel-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all .2s;
+  }
+  .hostel-card:hover { box-shadow: 0 8px 24px rgba(2,119,189,.12); transform: translateY(-2px); }
+  .hostel-card-header {
+    background: linear-gradient(135deg,#0277BD,#01579B);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .gender-tag {
+    background: rgba(255,255,255,.2);
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .bed-bar { height: 6px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin: 8px 0 4px; }
+  .bed-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .bed-bar-fill.low { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .apply-btn {
+    display: inline-block; padding: 10px 20px;
+    background: linear-gradient(135deg,#0277BD,#01579B);
+    color: white; border-radius: 8px;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    transition: all .2s;
+  }
+  .apply-btn:hover { box-shadow: 0 4px 12px rgba(2,119,189,.35); transform: translateY(-1px); }
+  .apply-btn:disabled, .apply-btn.disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+  .cancel-btn {
+    background: #fee2e2; color: #dc2626; border: none;
+    padding: 8px 16px; border-radius: 8px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all .2s;
+  }
+  .cancel-btn:hover { background: #fecaca; }
+  .section-title {
+    font-size: 18px; font-weight: 700; color: #1e293b;
+    margin: 0 0 16px 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Flash Messages -->
+{% if messages %}
+{% for msg in messages %}
+<div style="padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:13px;
+  {% if msg.tags == 'error' %}background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;
+  {% elif msg.tags == 'success' %}background:#dcfce7;border:1px solid #86efac;color:#166534;
+  {% elif msg.tags == 'warning' %}background:#fef3c7;border:1px solid #fde68a;color:#92400e;
+  {% else %}background:#e0f2fe;border:1px solid #7dd3fc;color:#0c4a6e;{% endif %}">
+  {{ msg }}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Hero Banner -->
+<div class="hostel-hero">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+    <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-hotel" style="font-size:22px;"></i>
+    </div>
+    <div>
+      <h2 style="margin:0;font-size:22px;font-weight:800;">Hostel & Accommodation</h2>
+      <p style="margin:4px 0 0;font-size:13px;opacity:.85;">Academic Year {{ academic_year }}</p>
+    </div>
+  </div>
+  <p style="margin:0;opacity:.8;font-size:14px;max-width:500px;">
+    View your current hostel allocation, browse available hostels, and apply for accommodation.
+  </p>
+</div>
+
+<!-- Stats Row -->
+<div class="stat-row">
+  <div class="stat-box">
+    <div class="num">{{ total_hostels }}</div>
+    <div class="lbl">Total Hostels</div>
+  </div>
+  <div class="stat-box">
+    <div class="num">{{ total_beds }}</div>
+    <div class="lbl">Total Beds</div>
+  </div>
+  <div class="stat-box">
+    <div class="num" style="color:{% if total_available > 0 %}#16a34a{% else %}#dc2626{% endif %};">{{ total_available }}</div>
+    <div class="lbl">Available Beds</div>
+  </div>
+  <div class="stat-box">
+    <div class="num" style="color:#f59e0b;">{{ total_beds|add:"-"|add:total_available }}</div>
+    <div class="lbl">Occupied Beds</div>
+  </div>
+</div>
+
+<!-- My Allocation Card -->
+<div class="allocation-card">
+  <div class="allocation-header">
+    <h3><i class="fas fa-bed" style="color:#0277BD;margin-right:8px;"></i>My Accommodation</h3>
+    {% if allocation %}
+      {% if allocation.status == 'paid' %}
+        <span class="status-pill pill-paid">Confirmed & Paid</span>
+      {% elif allocation.status == 'pending_payment' %}
+        <span class="status-pill pill-pending">Pending Payment</span>
+      {% else %}
+        <span class="status-pill pill-none">{{ allocation.get_status_display }}</span>
+      {% endif %}
+    {% else %}
+      <span class="status-pill pill-none">Not Allocated</span>
+    {% endif %}
+  </div>
+
+  {% if allocation %}
+  <div class="info-grid-2">
+    <div class="info-item">
+      <label>Hostel</label>
+      <div class="val">{{ allocation.bed_space.room.hostel.name }}</div>
+    </div>
+    <div class="info-item">
+      <label>Room Number</label>
+      <div class="val">Room {{ allocation.bed_space.room.room_number }}</div>
+    </div>
+    <div class="info-item">
+      <label>Bed Space</label>
+      <div class="val">{{ allocation.bed_space.bed_identifier }}</div>
+    </div>
+    <div class="info-item">
+      <label>Floor</label>
+      <div class="val">{{ allocation.bed_space.room.floor|default:"Ground Floor" }}</div>
+    </div>
+    <div class="info-item">
+      <label>Gender Category</label>
+      <div class="val">{{ allocation.bed_space.room.hostel.get_gender_category_display }}</div>
+    </div>
+    <div class="info-item">
+      <label>Fee</label>
+      <div class="val" style="color:#16a34a;">₦{{ allocation.bed_space.room.hostel.price_per_session|floatformat:0 }}</div>
+    </div>
+    <div class="info-item">
+      <label>Allocated On</label>
+      <div class="val">{{ allocation.allocated_at|date:"d M Y" }}</div>
+    </div>
+    <div class="info-item">
+      <label>Academic Year</label>
+      <div class="val">{{ allocation.academic_year }}</div>
+    </div>
+  </div>
+
+  <div style="padding:0 24px 24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    {% if allocation.status == 'pending_payment' %}
+    <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400e;flex:1;">
+      <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i>
+      <strong>Payment required.</strong> Visit the bursary to pay ₦{{ allocation.bed_space.room.hostel.price_per_session|floatformat:0 }} and confirm your bed space.
+    </div>
+    <form method="post" action="{% url 'hostels:cancel_allocation' allocation.id %}"
+          onsubmit="return confirm('Cancel your hostel allocation? The bed will be released.');">
+      {% csrf_token %}
+      <button type="submit" class="cancel-btn">
+        <i class="fas fa-times" style="margin-right:6px;"></i>Cancel Application
+      </button>
+    </form>
+    {% elif allocation.status == 'paid' %}
+    <div style="background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:12px 16px;font-size:13px;color:#166534;flex:1;">
+      <i class="fas fa-check-circle" style="margin-right:6px;"></i>
+      <strong>Allocation confirmed.</strong> Your bed space is secured for {{ allocation.academic_year }}.
+    </div>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <!-- No allocation -->
+  <div style="padding:40px;text-align:center;">
+    <div style="width:72px;height:72px;border-radius:50%;background:#f0f9ff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <i class="fas fa-hotel" style="font-size:28px;color:#0277BD;"></i>
+    </div>
+    <h4 style="margin:0 0 8px;font-size:17px;color:#1e293b;">No Hostel Allocated</h4>
+    <p style="color:#64748b;font-size:14px;margin:0 0 20px;">You haven't been assigned a hostel bed for {{ academic_year }}.</p>
+    {% if total_available > 0 %}
+    <a href="{% url 'hostels:apply_allocation' %}" class="apply-btn">
+      <i class="fas fa-plus" style="margin-right:8px;"></i>Apply for Accommodation
+    </a>
+    {% else %}
+    <div style="background:#f1f5f9;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748b;">
+      <i class="fas fa-info-circle" style="margin-right:6px;"></i>
+      No beds are currently available. Check back later.
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Available Hostels -->
+<h3 class="section-title">
+  <i class="fas fa-building" style="color:#0277BD;"></i> Available Hostels
+</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:30px;">
+  {% for item in hostel_data %}
+  <div class="hostel-card">
+    <div class="hostel-card-header">
+      <div>
+        <div style="font-size:16px;font-weight:700;">{{ item.hostel.name }}</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px;">
+          <i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>{{ item.hostel.location|default:"YCHST Campus" }}
+        </div>
+      </div>
+      <span class="gender-tag">{{ item.hostel.get_gender_category_display }}</span>
+    </div>
+    <div style="padding:16px 20px;">
+      {% if item.hostel.description %}
+      <p style="font-size:13px;color:#64748b;margin:0 0 12px;">{{ item.hostel.description }}</p>
+      {% endif %}
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:12px;color:#94a3b8;">Bed Availability</span>
+        <span style="font-size:13px;font-weight:700;color:{% if item.full %}#dc2626{% else %}#16a34a{% endif %};">
+          {{ item.available }}/{{ item.total }} beds free
+        </span>
+      </div>
+      <div class="bed-bar">
+        {% if item.total > 0 %}
+        <div class="bed-bar-fill {% if item.available == 0 %}low{% endif %}"
+             style="width:{% widthratio item.available item.total 100 %}%;"></div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+        <div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Fee/Session</div>
+          <div style="font-size:18px;font-weight:800;color:#0277BD;">₦{{ item.hostel.price_per_session|floatformat:0 }}</div>
+        </div>
+        {% if not has_allocation %}
+          {% if not item.full %}
+          <a href="{% url 'hostels:apply_allocation' %}?hostel={{ item.hostel.id }}" class="apply-btn" style="padding:8px 16px;font-size:13px;">
+            Apply <i class="fas fa-arrow-right" style="margin-left:6px;"></i>
+          </a>
+          {% else %}
+          <span class="apply-btn disabled" style="padding:8px 16px;font-size:13px;">Full</span>
+          {% endif %}
+        {% else %}
+        <span style="font-size:12px;color:#94a3b8;font-style:italic;">Already allocated</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">
+    <i class="fas fa-building" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
+    No hostels have been configured yet. Contact the hostel administrator.
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

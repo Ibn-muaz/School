@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Official Payment Receipt{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --receipt-primary: #1a365d; /* Professional dark blue */
+    --receipt-success: #059669; /* Green for PAID status */
+    --receipt-border: #d1d5db; /* Professional gray border */
+  }
+
+  /* Receipt Container */
+  .receipt-canvas {
+    background: #fff;
+    padding: 30px;
+    max-width: 950px;
+    margin: 0 auto;
+    border: 1px solid var(--receipt-border);
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Header Section */
+  .receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--receipt-primary);
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+  }
+
+  .header-content {
+    text-align: center;
+    flex: 1;
+    padding: 0 20px;
+  }
+
+  .college-name {
+    font-size: 28px;
+    font-weight: 850;
+    color: var(--receipt-primary);
+    margin: 0;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .college-address {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--receipt-primary);
+    margin: 5px 0;
+  }
+
+  .programme-type {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--receipt-primary);
+    text-transform: uppercase;
+    margin: 8px 0;
+  }
+
+  .receipt-id-tag {
+    font-size: 13px;
+    font-weight: 900;
+    color: #000;
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+
+  .student-photo-box {
+    width: 140px;
+    height: 160px;
+    border: 1px solid #000;
+    overflow: hidden;
+    background: #fdfdfd;
+  }
+
+  .student-photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Information Grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 40px;
+    margin-bottom: 20px;
+    border: 1px solid #000;
+  }
+
+  .info-item {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+  }
+
+  .info-item:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    width: 130px;
+    padding: 8px 10px;
+    font-weight: 800;
+    color: var(--receipt-primary);
+    border-right: 1px solid #eee;
+    background: #f9fafb;
+  }
+
+  .info-value {
+    flex: 1;
+    padding: 8px 10px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  /* Items Table */
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    border: 1px solid #000;
+  }
+
+  .items-table th {
+    background: #f3f4f6;
+    border: 1px solid #000;
+    padding: 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--receipt-primary);
+  }
+
+  .items-table td {
+    border: 1px solid #eee;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .items-table tr:first-child td { border-top: 1px solid #000; }
+  .items-table tr td:first-child, .items-table tr td:last-child { border-left: 1px solid #000; border-right: 1px solid #000; }
+
+  .amount-col {
+    text-align: right;
+    font-weight: 600;
+    width: 180px;
+  }
+
+  .sum-row {
+    font-weight: 900;
+    font-size: 14px;
+    border-top: 2px solid #000;
+  }
+
+  .sum-label {
+    text-align: right;
+    padding-right: 20px;
+    border: 1px solid #000;
+  }
+
+  .sum-value {
+    text-align: right;
+    padding: 10px;
+    border: 1px solid #000;
+  }
+
+  /* Footer */
+  .receipt-footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 11px;
+    color: #666;
+  }
+
+  .status-badge {
+    color: var(--receipt-success);
+    font-weight: 900;
+    font-size: 14px;
+  }
+
+  /* Print Specifics */
+  @media print {
+    .no-print { display: none !important; }
+    .receipt-canvas { 
+      box-shadow: none; 
+      border: none; 
+      max-width: 100%; 
+      padding: 0;
+    }
+    body { background: white !important; }
+  }
+</style>
+
+<div class="no-print mb-8 flex items-center justify-between">
+    <div>
+        <h2 class="text-xl font-bold">Official Payment Receipt</h2>
+        <p class="text-sm text-gray-500">Preview and print your consolidated session receipt</p>
+    </div>
+    <div class="flex gap-4">
+        <button onclick="window.print()" class="btn btn-primary px-6">
+            <i data-lucide="printer" class="w-5 h-5 mr-2"></i> Print Receipt
+        </button>
+        <a href="{% url 'portal:my_documents' %}" class="btn btn-ghost">Return to Documents</a>
+    </div>
+</div>
+
+<div class="receipt-canvas">
+    <!-- Header -->
+    <div class="receipt-header">
+        <div style="width: 140px;">
+            <div style="width:100px; height:100px; background:var(--receipt-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:40px; font-weight:900;">
+                Y
+            </div>
+        </div>
+
+        <div class="header-content">
+            <h1 class="college-name">{{ college_full_name }}</h1>
+            <div class="college-address">SANGA, NASARAWA STATE, NIGERIA</div>
+            <div style="font-size:13px; font-weight:700;">PMB 1022, SANGA</div>
+            <div class="programme-type">UNDERGRADUATE</div>
+            <div class="receipt-id-tag">SCHOOL FEE PAYMENT RECEIPT</div>
+        </div>
+
+        <div class="student-photo-box">
+            {% if payment.student.profile_picture %}
+                <img src="{{ payment.student.profile_picture.url }}" alt="Student">
+            {% else %}
+                <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#ccc; font-size:10px;">PASSPORT PHOTO</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="info-grid">
+        <!-- Left Column -->
+        <div class="column">
+            <div class="info-item">
+                <div class="info-label">Matric/Reg No:</div>
+                <div class="info-value">{{ profile.matriculation_number }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Faculty:</div>
+                <div class="info-value">{{ profile.faculty }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Level:</div>
+                <div class="info-value">{{ profile.level }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Session:</div>
+                <div class="info-value">2024/2025</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Date:</div>
+                <div class="info-value">{{ payment.payment_date|date:"Y-m-d H:i:s.u" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status:</div>
+                <div class="info-value status-badge">PAID</div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="column">
+            <div class="info-item">
+                <div class="info-label">Names:</div>
+                <div class="info-value">{{ payment.student.get_full_name|upper }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Department:</div>
+                <div class="info-value">{{ profile.department }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Programme:</div>
+                <div class="info-value">{{ profile.program }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Trans. Id:</div>
+                <div class="info-value" style="font-family:monospace; font-size:11px;">{{ trans_ids }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Invoice:</div>
+                <div class="info-value">INV-{{ payment.pk|add:"1000000" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">State:</div>
+                <div class="info-value">Nasarawa</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 50px;">S/N</th>
+                <th>Fee Item</th>
+                <th class="amount-col">Amount(₦)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in fee_items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.name }}</td>
+                <td class="amount-col">{{ item.amount|floatformat:1 }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="sum-row">
+                <td colspan="2" class="sum-label">Total: {{ total_paid|floatformat:2 }}</td>
+                <td class="sum-value">Total for invoice: {{ total_paid|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="receipt-footer">
+        <div>https://portal.yar-yayacollege.edu.ng</div>
+        <div style="margin-left: 20px;">{{ now|date:"Y-m-d" }} - 1/1</div>
+    </div>
+</div>
+{% endblock %}

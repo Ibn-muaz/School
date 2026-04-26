@@ -1,0 +1,153 @@
+{% extends base_template|default:"base.html" %}
+{% block page_title %}Help & Support{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h2 style="font-size:20px;font-weight:700;">Help & Support</h2>
+  <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Contact the ICT helpdesk or submit a support ticket</p>
+</div>
+
+<div class="grid-cols-2">
+  <div>
+    <div class="card mb-6" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+          <i data-lucide="phone" style="width:15px;height:15px;color:var(--color-primary);"></i> Contact Information
+        </span>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+        {% for office in offices %}
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg-page);border-radius:var(--radius-md);">
+          <div style="width:42px;height:42px;background:{{ office.bg }};border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="{{ office.icon }}" style="width:20px;height:20px;color:{{ office.color }};"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">{{ office.name }}</div>
+            <div style="font-size:12px;color:var(--text-muted);">{{ office.desc }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg-page);border-radius:var(--radius-md);">
+          <div style="width:42px;height:42px;background:#DBEAFE;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="monitor" style="width:20px;height:20px;color:#1D4ED8;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">ICT Helpdesk</div>
+            <div style="font-size:12px;color:var(--text-muted);">For portal login issues, password resets, and technical problems</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg-page);border-radius:var(--radius-md);">
+          <div style="width:42px;height:42px;background:#D1FAE5;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="landmark" style="width:20px;height:20px;color:#065F46;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">Bursary Office</div>
+            <div style="font-size:12px;color:var(--text-muted);">For fee payment issues, receipt queries, and invoice problems</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg-page);border-radius:var(--radius-md);">
+          <div style="width:42px;height:42px;background:#FEF3C7;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="graduation-cap" style="width:20px;height:20px;color:#B45309;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">Academic Affairs / Registrar</div>
+            <div style="font-size:12px;color:var(--text-muted);">For course registration, programme change, and records</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg-page);border-radius:var(--radius-md);">
+          <div style="width:42px;height:42px;background:#F5F3FF;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="bar-chart-2" style="width:20px;height:20px;color:#6D28D9;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">Exams & Records Office</div>
+            <div style="font-size:12px;color:var(--text-muted);">For result queries, transcript requests, and exam cards</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+          <i data-lucide="help-circle" style="width:15px;height:15px;color:var(--color-primary);"></i> FAQ
+        </span>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+        {% for qa in faq %}
+        <details style="border:1px solid var(--border-color);border-radius:var(--radius-sm);overflow:hidden;">
+          <summary style="padding:12px 14px;font-weight:600;font-size:13px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+            {{ qa.q }} <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+          </summary>
+          <div style="padding:12px 14px;font-size:13px;color:var(--text-secondary);border-top:1px solid var(--border-color);background:var(--bg-page);">{{ qa.a }}</div>
+        </details>
+        {% empty %}
+        <details style="border:1px solid var(--border-color);border-radius:var(--radius-sm);overflow:hidden;">
+          <summary style="padding:12px 14px;font-weight:600;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;">I forgot my portal password. What do I do? <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></summary>
+          <div style="padding:12px 14px;font-size:13px;color:var(--text-secondary);border-top:1px solid var(--border-color);background:var(--bg-page);">Contact the ICT Director or submit a support ticket below for a password reset.</div>
+        </details>
+        <details style="border:1px solid var(--border-color);border-radius:var(--radius-sm);overflow:hidden;">
+          <summary style="padding:12px 14px;font-weight:600;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;">I paid my fees but it is still showing outstanding balance. <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></summary>
+          <div style="padding:12px 14px;font-size:13px;color:var(--text-secondary);border-top:1px solid var(--border-color);background:var(--bg-page);">Go to <strong>School Fees</strong> → click <em>Verify Payment</em> or contact the Bursary office with your receipt.</div>
+        </details>
+        <details style="border:1px solid var(--border-color);border-radius:var(--radius-sm);overflow:hidden;">
+          <summary style="padding:12px 14px;font-weight:600;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;">My results are not showing. <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></summary>
+          <div style="padding:12px 14px;font-size:13px;color:var(--text-secondary);border-top:1px solid var(--border-color);background:var(--bg-page);">Results are only visible after fees are cleared and the Exams Office publishes them.</div>
+        </details>
+        <details style="border:1px solid var(--border-color);border-radius:var(--radius-sm);overflow:hidden;">
+          <summary style="padding:12px 14px;font-weight:600;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;">I cannot register courses. <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></summary>
+          <div style="padding:12px 14px;font-size:13px;color:var(--text-secondary);border-top:1px solid var(--border-color);background:var(--bg-page);">Course registration requires full fee clearance first. Ensure you have paid and verified your school fees.</div>
+        </details>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="ticket" style="width:15px;height:15px;color:var(--color-primary);"></i> Submit a Support Ticket
+      </span>
+    </div>
+    <div class="card-body">
+      {% if submitted %}
+      <div class="alert alert-success" style="display:flex;align-items:center;gap:10px;">
+        <i data-lucide="check-circle-2" style="width:18px;height:18px;flex-shrink:0;"></i>
+        Your support request has been sent to the ICT Helpdesk. We will respond within 24 hours.
+      </div>
+      {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Issue Type <span class="required">*</span></label>
+          <select name="subject" class="form-control" required>
+            <option value="">-- Select Issue Type --</option>
+            <option value="Password Reset">Password Reset</option>
+            <option value="Fee Payment Issue">Fee Payment Issue</option>
+            <option value="Course Registration Problem">Course Registration Problem</option>
+            <option value="Result Query">Result Query</option>
+            <option value="Profile Update">Profile Update</option>
+            <option value="Exam Card Issue">Exam Card Issue</option>
+            <option value="Other Portal Issue">Other Portal Issue</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Username / Matric No.</label>
+          <div class="input-group">
+            <span class="input-icon"><i data-lucide="user" style="width:15px;height:15px;"></i></span>
+            <input type="text" class="form-control" value="{{ user.username }}" readonly style="background:var(--bg-page);">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description <span class="required">*</span></label>
+          <textarea name="body" class="form-control" rows="6" placeholder="Describe your issue in detail. Include any error messages you see..." required style="resize:vertical;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;gap:8px;">
+          <i data-lucide="send" style="width:16px;height:16px;"></i> Submit Ticket
+        </button>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:12px;">Tickets are responded to within 24 working hours.</p>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

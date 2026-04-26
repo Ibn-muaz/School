@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Application Finalization{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  
+  <!-- Step Tracker -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 20px 40px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #48bb78; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800;"><i data-lucide="check" style="width:20px; height:20px;"></i></div>
+        <span style="font-size: 11px; font-weight: 500; color: #48bb78;">Bio-Data</span>
+     </div>
+     <div style="flex: 1; height: 2px; background: #48bb78; margin: 0 15px; transform: translateY(-10px);"></div>
+     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #48bb78; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800;"><i data-lucide="check" style="width:20px; height:20px;"></i></div>
+        <span style="font-size: 11px; font-weight: 500; color: #48bb78;">Academic</span>
+     </div>
+     <div style="flex: 1; height: 2px; background: #48bb78; margin: 0 15px; transform: translateY(-10px);"></div>
+     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #48bb78; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800;"><i data-lucide="check" style="width:20px; height:20px;"></i></div>
+        <span style="font-size: 11px; font-weight: 500; color: #48bb78;">Choices</span>
+     </div>
+     <div style="flex: 1; height: 2px; background: #48bb78; margin: 0 15px; transform: translateY(-10px);"></div>
+     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #48bb78; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800;"><i data-lucide="check" style="width:20px; height:20px;"></i></div>
+        <span style="font-size: 11px; font-weight: 500; color: #48bb78;">Documents</span>
+     </div>
+     <div style="flex: 1; height: 2px; background: #48bb78; margin: 0 15px; transform: translateY(-10px);"></div>
+     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #3182ce; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800;">5</div>
+        <span style="font-size: 12px; font-weight: 700; color: #2d3748;">Finalize</span>
+     </div>
+  </div>
+
+  <div class="card" style="border: 2px solid #ebf8ff;">
+    <div class="card-header" style="background: #ebf8ff; border-bottom: 2px solid #bee3f8; padding: 24px; text-align: center;">
+        <div style="width: 60px; height: 60px; background: #3182ce; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 15px;">
+            <i data-lucide="credit-card" style="width:32px; height:32px;"></i>
+        </div>
+        <h2 style="font-size: 24px; font-weight: 850; color: #2a4365; margin: 0;">Review & Application Fee</h2>
+        <p style="font-size: 14px; color: #2c5282; margin-top: 5px;">Almost done! Review your details and pay the application fee.</p>
+    </div>
+    <div class="card-body" style="padding: 40px;">
+        
+        <div style="background: #f7fafc; border-radius: 12px; padding: 24px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+            <h3 style="font-size: 16px; font-weight: 750; color: #2d3748; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Summary of Details</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 4px;">Full Name</p>
+                    <p style="font-size: 14px; font-weight: 700; color: #2d3748;">{{ application.user.get_full_name|upper }}</p>
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 4px;">First Choice Program</p>
+                    <p style="font-size: 14px; font-weight: 700; color: #2d3748;">{{ application.first_choice_program }}</p>
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 4px;">JAMB Number</p>
+                    <p style="font-size: 14px; font-weight: 700; color: #2d3748;">{{ application.academic_info.jamb_reg_number }}</p>
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 4px;">JAMB Score</p>
+                    <p style="font-size: 14px; font-weight: 700; color: #2d3748;">{{ application.academic_info.jamb_score }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; background: #fffaf0; border: 1px dashed #f6ad55; padding: 30px; border-radius: 12px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #c05621; text-transform: uppercase; margin-bottom: 10px;">Payment Breakdown</h4>
+            <div style="font-size: 40px; font-weight: 900; color: #1a202c; margin-bottom: 5px;">₦10,500.00</div>
+            <p style="font-size: 13px; color: #718096;">Application processing fee (Incl. charges)</p>
+            
+            <form method="post" action="{% url 'admissions:wizard' %}" style="margin-top: 30px;">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="5">
+                <button type="submit" class="btn btn-primary" style="padding: 18px 60px; font-size: 18px; font-weight: 800; border-radius: 999px; box-shadow: 0 4px 14px 0 rgba(49, 130, 206, 0.39);">
+                    Proceed to Payment (Mock) →
+                </button>
+            </form>
+            
+            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 20px; opacity: 0.6;">
+                <img src="https://paystack.com/assets/payment/img/paystack-badge-cards.png" alt="Payment Logos" style="height: 24px;">
+                <!-- Add other payment logos if needed -->
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; margin-top: 40px;">
+            <a href="?step=4" class="btn btn-ghost" style="font-weight: 600;">← Back to Documents</a>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

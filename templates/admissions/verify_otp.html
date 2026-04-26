@@ -1,0 +1,37 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block page_title %}Verify Account{% endblock %}
+
+{% block content %}
+<div class="auth-layout" style="background:#f7fafc;">
+  <div style="max-width: 440px; width: 100%; margin: 80px auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+    <div style="width: 64px; height: 64px; background: #ebf8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3182ce; margin: 0 auto 24px;">
+      <i data-lucide="shield-check" style="width:32px; height:32px;"></i>
+    </div>
+    
+    <h2 style="font-size: 24px; font-weight: 850; color: #1a202c; margin-bottom: 8px;">Verify your Email</h2>
+    <p style="color: #718096; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
+      We've sent a 6-digit verification code to your email. Please enter it below to activate your account.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="email" value="{{ request.GET.email }}">
+      
+      <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 32px;">
+        <input type="text" name="otp" class="form-control" maxlength="6" style="width: 180px; text-align: center; font-size: 24px; font-weight: 800; letter-spacing: 8px; height: 60px; border-radius: 12px; border: 2px solid #e2e8f0;" placeholder="000000" required autofocus>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 48px; font-weight: 700;">
+        Verify Account
+      </button>
+
+      <div style="margin-top: 24px; font-size: 14px; color: #718096;">
+        Didn't receive the code? 
+        <a href="#" style="color: #3182ce; font-weight: 700; text-decoration: none;">Resend Code</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

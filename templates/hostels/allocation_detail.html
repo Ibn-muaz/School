@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block page_title %}Allocation Details{% endblock %}
+
+{% block content %}
+<div class="flex-between mb-6">
+    <h2>Allocation Details</h2>
+    <a href="{% url 'hostels:all_allocations' %}" class="btn btn-outline btn-sm">
+        <i data-lucide="arrow-left"></i> Back
+    </a>
+</div>
+
+<!-- Allocation Info Card -->
+<div class="grid-cols-2 mb-6">
+    <!-- Student Information -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Student Information</span>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; gap: 16px;">
+                <div>
+                    <label style="font-size: 12px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Name</label>
+                    <div style="margin-top: 4px;">{{ allocation.student_name }}</div>
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Student ID</label>
+                    <div style="margin-top: 4px;">{{ allocation.student_id }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bed Space Information -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Assigned Bed Space</span>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; gap: 16px;">
+                <div>
+                    <label style="font-size: 12px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Bed Code</label>
+                    <div style="margin-top: 4px; font-weight: 600;">{{ allocation.bed_identifier }}</div>
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Room</label>
+                    <div style="margin-top: 4px;">{{ allocation.room_number }}</div>
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Hostel</label>
+                    <div style="margin-top: 4px;">{{ allocation.hostel_name }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status and Dates -->
+<div class="card mb-6">
+    <div class="card-header">
+        <span class="card-title">Status & Timeline</span>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+            <div style="background: #F0F7FF; padding: 12px; border-radius: 6px;">
+                <label style="font-size: 11px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Status</label>
+                <div style="margin-top: 8px;">
+                    <span class="badge" style="background-color: {% if allocation.status == 'pending_payment' %}#FFF3E0; color: #E65100;{% elif allocation.status == 'paid' %}#E8F5E9; color: #2E7D32;{% else %}#FCE4EC; color: #C2185B;{% endif %}">
+                        {{ allocation.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div style="background: #F0F7FF; padding: 12px; border-radius: 6px;">
+                <label style="font-size: 11px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Allocated On</label>
+                <div style="margin-top: 8px; font-size: 14px;">{{ allocation.allocated_at|date:"d M Y" }}</div>
+            </div>
+            <div style="background: #F0F7FF; padding: 12px; border-radius: 6px;">
+                <label style="font-size: 11px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Payment Date</label>
+                <div style="margin-top: 8px; font-size: 14px;">
+                    {% if allocation.payment_date %}
+                        {{ allocation.payment_date|date:"d M Y" }}
+                    {% else %}
+                        <span style="color: #90A4AE;">—</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="background: #F0F7FF; padding: 12px; border-radius: 6px;">
+                <label style="font-size: 11px; color: #0277BD; font-weight: 600; text-transform: uppercase;">Fee Amount</label>
+                <div style="margin-top: 8px; font-size: 14px; color: #2E7D32; font-weight: 600;">₦{{ allocation.fee_amount|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Actions</span>
+    </div>
+    <div class="card-body">
+        <div style="display: flex; gap: 8px;">
+            {% if allocation.status == 'pending_payment' %}
+            <form method="post" action="{% url 'hostels:confirm_payment' allocation.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" onclick="return confirm('Mark allocation as paid?')">
+                    <i data-lucide="check-circle-2"></i> Confirm Payment
+                </button>
+            </form>
+            {% endif %}
+
+            {% if allocation.status in 'pending_payment,expired' %}
+            <form method="post" action="{% url 'hostels:cancel_allocation' allocation.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel this allocation? The bed space will be freed up.')">
+                    <i data-lucide="trash-2"></i> Cancel Allocation
+                </button>
+            </form>
+            {% endif %}
+
+            <a href="{% url 'hostels:all_allocations' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Information Card -->
+{% if allocation.status != 'paid' %}
+<div class="alert alert-warning" style="margin-top: 20px;">
+    <span>⚠️</span>
+    <div>
+        <strong>Payment Not Confirmed</strong><br>
+        This allocation awaits payment verification. Once the student completes payment, mark the allocation as paid to confirm.
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

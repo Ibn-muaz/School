@@ -1,0 +1,98 @@
+{% load static %}
+{% with request.resolver_match.url_name as url_name %}
+
+{# ── Home ───────────────────────────────────────── #}
+<a href="{% url 'portal:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Dashboard</span>
+  <span class="nav-tooltip">Dashboard</span>
+</a>
+
+{# ── Profile / Bio-Data ─────────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;">My Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Profile / Bio-Data</span>
+  <span class="nav-tooltip">Profile / Bio-Data</span>
+</a>
+<a href="{% url 'portal:change_programme' %}" class="nav-item {% if url_name == 'change_programme' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="repeat" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Change of Programme</span>
+  <span class="nav-tooltip">Change of Programme</span>
+</a>
+
+{# ── Fees & Payments ────────────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;">Finance</div>
+<a href="{% url 'portal:student_fees' %}" class="nav-item {% if url_name == 'student_fees' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">School Fees</span>
+  <span class="nav-tooltip">School Fees</span>
+</a>
+<a href="{% url 'portal:other_payment' %}" class="nav-item {% if url_name == 'other_payment' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="banknote" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Other Payments</span>
+  <span class="nav-tooltip">Other Payments</span>
+</a>
+
+{# ── Academic ───────────────────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;">Academics</div>
+<a href="{% url 'portal:course_registration' %}" class="nav-item {% if url_name == 'course_registration' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="book-open" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Course Registration</span>
+  <span class="nav-tooltip">Course Registration</span>
+</a>
+<a href="{% url 'portal:student_results' %}" class="nav-item {% if url_name == 'student_results' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="award" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Results</span>
+  <span class="nav-tooltip">My Results</span>
+</a>
+<a href="{% url 'portal:timetable' %}" class="nav-item {% if url_name == 'timetable' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="calendar" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Timetable</span>
+  <span class="nav-tooltip">Timetable</span>
+</a>
+
+{# ── Documents & Clearance ──────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;">Documents</div>
+<a href="{% url 'portal:my_documents' %}" class="nav-item {% if url_name == 'my_documents' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="file-text" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Documents</span>
+  <span class="nav-tooltip">My Documents</span>
+</a>
+<a href="{% url 'portal:clearance' %}" class="nav-item {% if url_name == 'clearance' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="check-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Clearance</span>
+  <span class="nav-tooltip">Clearance</span>
+</a>
+
+{# ── Hostel ─────────────────────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;">Accommodation</div>
+<a href="{% url 'portal:hostel' %}" class="nav-item {% if url_name == 'hostel' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="building-2" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Hostel</span>
+  <span class="nav-tooltip">Hostel</span>
+</a>
+
+{# ── Notice Board ───────────────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;">Communication</div>
+<a href="{% url 'portal:announcements' %}" class="nav-item {% if url_name == 'announcements' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="megaphone" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Notice Board</span>
+  <span class="nav-tooltip">Notice Board</span>
+</a>
+<a href="{% url 'portal:support' %}" class="nav-item {% if url_name == 'support' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="headphones" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Help & Support</span>
+  <span class="nav-tooltip">Help & Support</span>
+</a>
+
+{# ── Logout ─────────────────────────────────────── #}
+<div class="sidebar-section-label" style="margin-top:8px;"></div>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);"
+   onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Logout</span>
+  <span class="nav-tooltip">Logout</span>
+</a>
+
+{% endwith %}

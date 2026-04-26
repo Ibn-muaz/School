@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}Review Application: {{ app.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+        <a href="{% url 'admissions:registrar_list' %}?status={{ app.status }}" class="btn btn-ghost p-2">
+            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </a>
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{{ app.user.get_full_name }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Application Number: <span class="font-mono">{{ app.application_number }}</span></p>
+        </div>
+    </div>
+    
+    <div class="flex gap-2">
+        <span class="badge {% if app.status == 'admitted' %}badge-success{% elif app.status == 'rejected' %}badge-danger{% else %}badge-info{% endif %} p-2 px-4 text-xs font-bold uppercase tracking-wider">
+            {{ app.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Details -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- 1. Bio-Data -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title flex items-center gap-2 font-bold"><i data-lucide="user" class="w-5 h-5"></i> Bio-Data Profile</h3>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-2 gap-y-4 text-sm">
+                    <div>
+                        <p class="text-muted mb-1">Full Name</p>
+                        <p class="font-medium text-gray-800">{{ app.user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Email Address</p>
+                        <p class="font-medium text-gray-800">{{ app.user.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Gender</p>
+                        <p class="font-medium text-gray-800">{{ profile.gender|default:"Not Provided" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Phone Number</p>
+                        <p class="font-medium text-gray-800">{{ app.user.phone_number|default:"Not Provided" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">State of Origin</p>
+                        <p class="font-medium text-gray-800">{{ profile.state_of_origin|default:"Not Provided" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Local Government</p>
+                        <p class="font-medium text-gray-800">{{ profile.lga|default:"Not Provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Academic History -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title flex items-center gap-2 font-bold"><i data-lucide="graduation-cap" class="w-5 h-5"></i> Academic Records</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-6">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Entrance Examination (JAMB)</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 border p-3 rounded-lg">
+                            <p class="text-xs text-muted">Registration Number</p>
+                            <p class="font-mono text-primary font-bold">{{ academic.jamb_reg_number|default:"N/A" }}</p>
+                        </div>
+                        <div class="bg-gray-50 border p-3 rounded-lg">
+                            <p class="text-xs text-muted">Aggregated Score</p>
+                            <p class="text-xl font-bold">{{ academic.jamb_score|default:"0" }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Proposed Program</h4>
+                <div class="p-3 border-l-4 border-primary bg-primary/5 rounded-r-lg">
+                    <p class="text-xs text-primary font-medium">Applied Choice</p>
+                    <p class="text-lg font-bold text-gray-800">{{ app.first_choice_program }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Documents -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title flex items-center gap-2 font-bold"><i data-lucide="file-check" class="w-5 h-5"></i> Verification Documents</h3>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for doc in documents %}
+                    <div class="border rounded-lg p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-primary/10 p-2 rounded">
+                                <i data-lucide="file-text" class="text-primary w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold">{{ doc.get_document_type_display }}</p>
+                                <p class="text-xs text-muted">Uploaded {{ doc.uploaded_at|date:"M d" }}</p>
+                            </div>
+                        </div>
+                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline">View</a>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 italic text-sm">No documents have been uploaded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Decision -->
+    <div class="lg:col-span-1">
+        <div class="card sticky top-24">
+            <div class="card-header bg-gray-50 border-b">
+                <h3 class="card-title text-center w-full font-bold uppercase tracking-wider text-xs">Review Decision</h3>
+            </div>
+            <div class="card-body space-y-4">
+                {% if app.status == 'admitted' %}
+                <div class="text-center py-6">
+                    <div class="bg-success/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="check-circle" class="text-success w-10 h-10"></i>
+                    </div>
+                    <p class="font-bold text-success">ADMITTED</p>
+                    <p class="text-xs text-muted mt-2">This applicant has been promoted to student status.</p>
+                </div>
+                {% elif app.status == 'rejected' %}
+                <div class="text-center py-6">
+                    <div class="bg-danger/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="x-circle" class="text-danger w-10 h-10"></i>
+                    </div>
+                    <p class="font-bold text-danger">REJECTED</p>
+                    <p class="text-xs text-muted mt-2">The application has been declined.</p>
+                </div>
+                {% else %}
+                <p class="text-sm text-gray-600 mb-4">Select the final decision for this application. Admitting the student will instantly generate their matriculation number.</p>
+                
+                <form action="{% url 'admissions:registrar_decision' app.pk %}" method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="form-label font-bold text-xs uppercase text-gray-400">Decision Outcome</label>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <button type="submit" name="decision" value="admit" class="btn btn-primary justify-center font-bold" onclick="return confirm('Promote this applicant to FULL STUDENT status?')">
+                                <i data-lucide="check" class="w-4 h-4 mr-1"></i> Admit
+                            </button>
+                            <button type="button" onclick="document.getElementById('reject-box').style.display='block'; this.style.display='none';" class="btn btn-outline border-danger text-danger hover:bg-danger/5 justify-center font-bold">
+                                <i data-lucide="x" class="w-4 h-4 mr-1"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="reject-box" style="display:none;" class="space-y-3 pt-4 border-t">
+                        <label class="form-label font-bold text-xs uppercase text-gray-400">Rejection Reason</label>
+                        <textarea name="reason" rows="3" class="form-control" placeholder="Explain why the application is rejected..."></textarea>
+                        <button type="submit" name="decision" value="reject" class="btn btn-danger w-full justify-center">Confirm Rejection</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-gray-50">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-muted">Fee Payment</span>
+                    {% if app.is_fee_paid %}
+                        <span class="text-success font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Verified</span>
+                    {% else %}
+                        <span class="text-danger font-bold flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

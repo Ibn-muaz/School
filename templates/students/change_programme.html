@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block page_title %}Change of Programme{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h2 style="font-size:20px;font-weight:700;">Change of Programme</h2>
+  <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Submit a formal request to change your academic programme</p>
+</div>
+
+<div class="grid-cols-2">
+  <div class="card">
+    <div class="card-header"><span class="card-title">📋 Current Programme</span></div>
+    <div class="card-body">
+      {% if profile %}
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+          <span style="color:var(--text-muted);">Programme</span><strong>{{ profile.program }}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+          <span style="color:var(--text-muted);">Department</span><strong>{{ profile.department }}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+          <span style="color:var(--text-muted);">Faculty</span><strong>{{ profile.faculty }}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="color:var(--text-muted);">Level</span><strong>{{ profile.level }}</strong>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state"><div class="empty-state-title">No profile found</div></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">📝 Request Form</span></div>
+    <div class="card-body">
+      {% if submitted %}
+      <div class="alert alert-success">
+        ✅ Your request has been submitted to the Registrar's office. You will be contacted.
+      </div>
+      {% else %}
+      <div class="alert alert-warning" style="margin-bottom:20px;">
+        ⚠️ Change of Programme requests are subject to approval by the Registrar and availability of space in the desired programme.
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Desired Programme <span class="required">*</span></label>
+          <select name="new_programme" class="form-control" required>
+            <option value="">-- Select Programme --</option>
+            {% for dept in departments %}
+            <option value="{{ dept }}">{{ dept }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason for Change <span class="required">*</span></label>
+          <textarea name="reason" class="form-control" rows="4" placeholder="Explain why you want to change your programme..." required style="resize:vertical;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+          📤 Submit Request
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

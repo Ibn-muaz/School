@@ -1,0 +1,81 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block page_title %}Application Portal{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+  <div class="auth-hero" style="background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);">
+    <div class="auth-hero-logo">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:50px; height:50px; background:white; border-radius:50%; padding:2px;">
+      <div>
+        <div class="auth-hero-logo-text">YCHST SANGA</div>
+        <div style="font-size:11px; opacity:0.8;">Admission Portal 2024/2025</div>
+      </div>
+    </div>
+    
+    <h1 style="color:white; font-size:40px; margin-top:40px; font-weight:800; line-height:1.2;">
+      Your Future <br> Starts Here.
+    </h1>
+    <p style="color:rgba(255,255,255,0.8); margin-top:20px; font-size:16px; line-height:1.6; max-width:400px;">
+      Empowering the next generation of healthcare professionals with excellence and technology.
+    </p>
+    
+    <div style="margin-top:40px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; color:rgba(255,255,255,0.9);">
+        <i data-lucide="check-circle" style="width:18px; height:18px; color:#48bb78;"></i>
+        <span>Accredited health science courses</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; color:rgba(255,255,255,0.9);">
+        <i data-lucide="check-circle" style="width:18px; height:18px; color:#48bb78;"></i>
+        <span>Electronic admission processing</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.9);">
+        <i data-lucide="check-circle" style="width:18px; height:18px; color:#48bb78;"></i>
+        <span>Secure document verification</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div style="max-width: 440px; width: 100%; margin: 0 auto; padding: 20px;">
+      <h2 style="font-size: 28px; font-weight: 850; color: #1a202c; margin-bottom: 8px;">Admission Portal</h2>
+      <p style="color: #718096; margin-bottom: 40px;">Select your journey to begin the application process.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- New Application -->
+        <a href="{% url 'admissions:signup' %}" style="text-decoration: none;">
+          <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s ease; cursor: pointer; background: white;" onmouseover="this.style.borderColor='#1a365d'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)';">
+            <div style="width: 56px; height: 56px; border-radius: 12px; background: #ebf8ff; display: flex; align-items: center; justify-content: center; color: #3182ce;">
+              <i data-lucide="plus-circle" style="width:30px; height:30px;"></i>
+            </div>
+            <div>
+              <h3 style="margin:0; font-size:18px; font-weight:700; color:#1a202c;">New application</h3>
+              <p style="margin:4px 0 0; font-size:13px; color:#718096;">Apply as a new student for the session.</p>
+            </div>
+            <i data-lucide="chevron-right" style="margin-left:auto; color:#cbd5e1;"></i>
+          </div>
+        </a>
+
+        <!-- Returning / Login -->
+        <a href="{% url 'portal:login' %}" style="text-decoration: none;">
+          <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s ease; cursor: pointer; background: white;" onmouseover="this.style.borderColor='#4a5568'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)';">
+            <div style="width: 56px; height: 56px; border-radius: 12px; background: #f7fafc; display: flex; align-items: center; justify-content: center; color: #4a5568;">
+              <i data-lucide="log-in" style="width:30px; height:30px;"></i>
+            </div>
+            <div>
+              <h3 style="margin:0; font-size:18px; font-weight:700; color:#1a202c;">Already registered? Login</h3>
+              <p style="margin:4px 0 0; font-size:13px; color:#718096;">Continue your existing application.</p>
+            </div>
+            <i data-lucide="chevron-right" style="margin-left:auto; color:#cbd5e1;"></i>
+          </div>
+        </a>
+      </div>
+
+      <div style="margin-top: 60px; text-align: center; border-top: 1px solid #edf2f7; padding-top: 24px;">
+        <p style="font-size: 12px; color: #a0aec0;">&copy; 2025 Yar'yaya College of Health Science and Technology Sanga</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

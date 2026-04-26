@@ -1,0 +1,15 @@
+{% extends "base_auth.html" %}
+{% block page_title %}404 — Page Not Found{% endblock %}
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
+  <div style="text-align:center;padding:48px 24px;max-width:400px;">
+    <div style="font-size:80px;margin-bottom:16px;">🔍</div>
+    <h1 style="font-size:64px;font-weight:800;color:var(--color-primary);line-height:1;">404</h1>
+    <h2 style="font-size:22px;font-weight:600;margin:12px 0 8px;">Page Not Found</h2>
+    <p style="font-size:14px;color:var(--text-muted);line-height:1.6;margin-bottom:28px;">
+      The page you are looking for doesn't exist or has been moved.
+    </p>
+    <a href="{% url 'portal:dashboard' %}" class="btn btn-primary">← Return to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

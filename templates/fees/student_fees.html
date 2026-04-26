@@ -1,0 +1,225 @@
+{% extends 'base_student.html' %}
+{% load static %}
+
+{% block page_title %}Student Fees{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fees-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    @media (max-width: 992px) {
+        .fees-layout { grid-template-columns: 1fr; }
+    }
+
+    .fee-item-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+    .fee-item-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .fee-total-row {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 2px solid var(--light-blue-bg);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .history-table th {
+        text-align: left;
+        padding: 12px 15px;
+        background: #f8fafc;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .history-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+    }
+
+    .invoice-card {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .pay-btn {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background 0.2s;
+    }
+
+    .pay-btn:hover {
+        background: var(--dark-blue);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-between mb-6" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+    <div>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-dark);">School Fees Management</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Current Session: 2024/2025</p>
+    </div>
+    <button onclick="window.print()" class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+        <i class="fas fa-print" style="margin-right: 8px;"></i> Print Receipt
+    </button>
+</div>
+
+<div class="fees-layout">
+    <!-- Fee Summary -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="fas fa-file-invoice-dollar" style="color: var(--primary-blue);"></i> Fee breakdown</span>
+        </div>
+        <div class="card-body">
+            {% if fee_structure %}
+                <div class="fee-item-row"><span>Tuition Fee</span><strong>₦{{ fee_structure.tuition_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>Registration Fee</span><strong>₦{{ fee_structure.registration_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>Examination Fee</span><strong>₦{{ fee_structure.examination_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>Library Fee</span><strong>₦{{ fee_structure.library_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>Medical / Insurance</span><strong>₦{{ fee_structure.medical_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>Sports Fee</span><strong>₦{{ fee_structure.sports_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>Development Levy</span><strong>₦{{ fee_structure.development_fee|floatformat:2 }}</strong></div>
+                <div class="fee-item-row"><span>ICT / Technology Fee</span><strong>₦{{ fee_structure.other_fees|floatformat:2 }}</strong></div>
+                
+                <div class="fee-total-row">
+                    <span style="font-weight: 700; color: var(--text-dark);">Total Amount</span>
+                    <span style="font-size: 18px; font-weight: 800; color: var(--primary-blue);">₦{{ fee_details.total_due|floatformat:2 }}</span>
+                </div>
+                
+                <div style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">Amount Paid</span>
+                        <span style="font-size: 13px; font-weight: 700; color: #059669;">₦{{ fee_details.total_paid|floatformat:2 }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 13px; color: var(--text-muted);">Balance Due</span>
+                        <span style="font-size: 13px; font-weight: 700; color: {% if fee_details.balance > 0 %}#dc2626{% else %}#059669{% endif %};">₦{{ fee_details.balance|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                {% if fee_details.balance > 0 %}
+                    <div style="margin-top: 25px;">
+                        {% if pending_invoice %}
+                            <div class="invoice-card">
+                                <div style="font-size: 12px; color: #92400e; font-weight: 700; text-transform: uppercase;">Pending Invoice Found</div>
+                                <div style="font-size: 14px; margin: 5px 0;">Ref: <strong class="font-mono">{{ pending_invoice.transaction_reference }}</strong></div>
+                                <div style="font-size: 18px; font-weight: 800; color: #92400e;">₦{{ pending_invoice.amount|floatformat:2 }}</div>
+                                
+                                <form method="post" style="margin-top: 15px;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="verify_payment">
+                                    <input type="hidden" name="payment_id" value="{{ pending_invoice.pk }}">
+                                    <button type="submit" class="pay-btn" style="background: #d97706;">
+                                        <i class="fas fa-check-circle"></i> Verify RRR Payment
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="generate_invoice">
+                                <input type="hidden" name="amount" value="{{ fee_details.balance }}">
+                                <button type="submit" class="pay-btn">
+                                    <i class="fas fa-plus-circle"></i> Generate Payment Invoice (RRR)
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div style="margin-top: 25px; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 20px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 30px; margin-bottom: 10px;">✅</div>
+                        <h3 style="color: #065f46; font-size: 16px; font-weight: 700;">Account Fully Cleared</h3>
+                        <p style="color: #065f46; font-size: 13px; margin-top: 5px;">You have no outstanding school fees for this session.</p>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px;"></i>
+                    <p style="color: var(--text-muted);">Fee structure hasn't been set for your level yet. Please contact the Bursary office.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="fas fa-history" style="color: var(--primary-blue);"></i> Transaction History</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% if payments %}
+                <div style="overflow-x: auto;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ref / RRR</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td>{{ p.payment_date|date:"d M, Y" }}</td>
+                                <td class="font-mono" style="font-size: 11px;">{{ p.transaction_reference }}</td>
+                                <td style="font-weight: 700;">₦{{ p.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if p.status == 'completed' %}
+                                        <span class="paid-badge">Paid</span>
+                                    {% elif p.status == 'pending' %}
+                                        <span class="badge" style="background:#fff7ed; color:#9a3412;">Pending</span>
+                                    {% else %}
+                                        <span class="badge" style="background:#fee2e2; color:#991b1b;">Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="padding: 60px 40px; text-align: center; color: var(--text-muted);">
+                    <i class="fas fa-credit-card" style="font-size: 40px; margin-bottom: 15px; opacity: 0.1;"></i>
+                    <p>No payment records found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

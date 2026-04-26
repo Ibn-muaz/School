@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block page_title %}General Permissions{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div><h2 style="font-size:20px;font-weight:700;">🔓 General Permissions</h2><p style="color:var(--text-muted);font-size:14px;">Grant special one-time permissions with ICT Director approval</p></div>
+  <button class="btn btn-primary" onclick="document.getElementById('new-perm-modal').style.display='flex'">+ New Permission</button>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-title">Active Permissions</span></div>
+  <div class="card-body" style="padding:0;">
+    {% if permissions %}
+    <table>
+      <thead><tr><th>Type</th><th>Granted To</th><th>Granted By</th><th>Valid From</th><th>Valid To</th><th>Status</th><th>Reason</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for p in permissions %}
+        <tr>
+          <td><span class="badge badge-violet">{{ p.get_permission_type_display }}</span></td>
+          <td><strong>{{ p.granted_to.username }}</strong></td>
+          <td style="color:var(--text-muted);font-size:13px;">{{ p.granted_by.username|default:"—" }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ p.valid_from|date:"d M H:i" }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ p.valid_to|date:"d M H:i" }}</td>
+          <td>{% if p.is_currently_valid %}<span class="badge badge-success">✓ Active</span>{% elif p.is_active %}<span class="badge badge-warning">Scheduled</span>{% else %}<span class="badge badge-neutral">Revoked</span>{% endif %}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ p.reason|truncatechars:30 }}</td>
+          <td>{% if p.is_active %}
+            <form method="post" style="display:inline;">{% csrf_token %}<input type="hidden" name="action" value="revoke"><input type="hidden" name="perm_id" value="{{ p.pk }}"><button class="btn btn-danger btn-sm" onclick="return confirm('Revoke this permission?')">Revoke</button></form>
+          {% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty-state"><div class="empty-state-icon">🔓</div><div class="empty-state-title">No permissions granted yet</div></div>{% endif %}
+  </div>
+</div>
+
+<!-- New Permission Modal -->
+<div id="new-perm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+  <div class="card" style="width:480px;">
+    <div class="card-header"><span class="card-title">Grant New Permission</span><button class="btn btn-ghost btn-sm btn-icon" onclick="document.getElementById('new-perm-modal').style.display='none'">✕</button></div>
+    <form method="post" class="card-body">
+      {% csrf_token %}<input type="hidden" name="action" value="create">
+      <div class="form-group"><label class="form-label">Permission Type <span class="required">*</span></label>
+        <select name="permission_type" class="form-control" required>{% for val,label in permission_types %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Grant To (User) <span class="required">*</span></label>
+        <select name="user_id" class="form-control" required><option value="">— Select user —</option>{% for u in all_users %}<option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }} ({{ u.username }})</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Reason <span class="required">*</span></label><textarea name="reason" class="form-control" rows="3" required placeholder="Provide a clear justification..."></textarea></div>
+      <div class="grid-cols-2" style="gap:12px;">
+        <div class="form-group" style="margin:0;"><label class="form-label">Valid From</label><input type="datetime-local" name="valid_from" class="form-control" required></div>
+        <div class="form-group" style="margin:0;"><label class="form-label">Valid To</label><input type="datetime-local" name="valid_to" class="form-control" required></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('new-perm-modal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Grant Permission</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

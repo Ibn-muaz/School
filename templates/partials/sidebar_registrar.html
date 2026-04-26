@@ -1,0 +1,56 @@
+{% with request.resolver_match.url_name as url_name %}
+<div class="sidebar-section-label">Registry</div>
+<a href="{% url 'portal:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Dashboard</span><span class="nav-tooltip">Dashboard</span>
+</a>
+<a href="{% url 'admissions:review_applications' %}" class="nav-item {% if 'admissions' in request.path %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-plus" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Admission Review</span>
+  {% if pending_admissions_count > 0 %}
+    <span style="background:var(--color-danger); color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:auto;">{{ pending_admissions_count }}</span>
+  {% endif %}
+  <span class="nav-tooltip">Admission Review</span>
+</a>
+<a href="{% url 'portal:fee_management' %}" class="nav-item {% if url_name == 'fee_management' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="users" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Student Records</span><span class="nav-tooltip">Student Records</span>
+</a>
+<a href="{% url 'portal:general_permissions' %}" class="nav-item {% if url_name == 'general_permissions' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="shield-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">General Permissions</span><span class="nav-tooltip">General Permissions</span>
+</a>
+<a href="{% url 'portal:registration_approvals' %}" class="nav-item {% if url_name == 'registration_approvals' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="clipboard-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Course Reg Approvals</span><span class="nav-tooltip">Course Reg Approvals</span>
+</a>
+<a href="{% url 'portal:manage_courses' %}" class="nav-item {% if url_name == 'manage_courses' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="book-open" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Academic Catalog</span><span class="nav-tooltip">Academic Catalog</span>
+</a>
+<a href="{% url 'portal:manage_offerings' %}" class="nav-item {% if url_name == 'manage_offerings' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="calendar-days" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Manage Offerings</span><span class="nav-tooltip">Manage Offerings</span>
+</a>
+<a href="{% url 'portal:scoresheet' %}" class="nav-item {% if url_name == 'scoresheet' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="award" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Result Moderation</span><span class="nav-tooltip">Result Moderation</span>
+</a>
+<a href="{% url 'portal:reports' %}" class="nav-item {% if url_name == 'reports' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Reports</span><span class="nav-tooltip">Reports</span>
+</a>
+<a href="{% url 'portal:announcements' %}" class="nav-item {% if url_name == 'announcements' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="megaphone" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Announcements</span><span class="nav-tooltip">Announcements</span>
+</a>
+<div class="sidebar-section-label" style="margin-top:12px;">Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Profile</span><span class="nav-tooltip">My Profile</span>
+</a>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);" onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Logout</span><span class="nav-tooltip">Logout</span>
+</a>
+{% endwith %}

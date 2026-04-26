@@ -1,0 +1,61 @@
+{% with request.resolver_match.url_name as url_name %}
+<div class="sidebar-section-label">System</div>
+<a href="{% url 'portal:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="monitor" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">System Dashboard</span><span class="nav-tooltip">System Dashboard</span>
+</a>
+<a href="{% url 'portal:user_management' %}" class="nav-item {% if url_name == 'user_management' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="users" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">User Management</span><span class="nav-tooltip">User Management</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Security</div>
+<a href="{% url 'portal:audit_logs' %}" class="nav-item {% if url_name == 'audit_logs' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="shield" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Audit Logs</span><span class="nav-tooltip">Audit Logs</span>
+</a>
+<a href="{% url 'portal:otp_manager' %}" class="nav-item {% if url_name == 'otp_manager' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="key" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">OTP Manager</span><span class="nav-tooltip">OTP Manager</span>
+</a>
+<a href="{% url 'portal:general_permissions' %}" class="nav-item {% if url_name == 'general_permissions' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="lock" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Permissions</span><span class="nav-tooltip">Permissions</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Academic</div>
+<a href="{% url 'portal:fee_management' %}" class="nav-item {% if url_name == 'fee_management' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Fee Records</span><span class="nav-tooltip">Fee Records</span>
+</a>
+<a href="{% url 'portal:scoresheet' %}" class="nav-item {% if url_name == 'scoresheet' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="file-spreadsheet" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Scoresheets</span><span class="nav-tooltip">Scoresheets</span>
+</a>
+<a href="{% url 'portal:registration_approvals' %}" class="nav-item {% if url_name == 'registration_approvals' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="clipboard-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Reg Approvals</span><span class="nav-tooltip">Reg Approvals</span>
+</a>
+<a href="{% url 'portal:manage_courses' %}" class="nav-item {% if url_name == 'manage_courses' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="book-open" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Academic Catalog</span><span class="nav-tooltip">Academic Catalog</span>
+</a>
+<a href="{% url 'portal:manage_offerings' %}" class="nav-item {% if url_name == 'manage_offerings' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="calendar-days" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Course Offerings</span><span class="nav-tooltip">Course Offerings</span>
+</a>
+<a href="{% url 'portal:announcements' %}" class="nav-item {% if url_name == 'announcements' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="megaphone" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Announcements</span><span class="nav-tooltip">Announcements</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Profile</span><span class="nav-tooltip">My Profile</span>
+</a>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);" onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Logout</span><span class="nav-tooltip">Logout</span>
+</a>
+{% endwith %}

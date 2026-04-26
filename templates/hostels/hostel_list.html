@@ -1,0 +1,158 @@
+{% extends 'base_student.html' %}
+{% load static %}
+
+{% block page_title %}Browse Hostels{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hostel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 25px;
+    }
+
+    .hostel-image-placeholder {
+        height: 180px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        position: relative;
+    }
+
+    .gender-pill {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 6px 12px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .hostel-info {
+        padding: 20px;
+    }
+
+    .hostel-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f1f5f9;
+        font-size: 13px;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .meta-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .meta-val {
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .filter-pills {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .filter-pill {
+        padding: 8px 20px;
+        border-radius: 99px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        background: white;
+        color: var(--text-muted);
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    .filter-pill:hover, .filter-pill.active {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-dark);">Hostel Accommodation</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Browse and book on-campus housing</p>
+    </div>
+    <a href="{% url 'hostels:student_dashboard' %}" class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--text-dark);">
+        <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back to My Bookings
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="filter-pills">
+    <a href="." class="filter-pill active">All Hostels</a>
+    <a href="?gender=male" class="filter-pill"><i class="fas fa-mars" style="margin-right: 6px;"></i> Male Only</a>
+    <a href="?gender=female" class="filter-pill"><i class="fas fa-venus" style="margin-right: 6px;"></i> Female Only</a>
+</div>
+
+<div class="hostel-grid">
+    {% for hostel in hostels %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="hostel-image-placeholder">
+            <i class="fas fa-building"></i>
+            <div class="gender-pill">{{ hostel.gender_category|upper }}</div>
+        </div>
+        <div class="hostel-info">
+            <div style="font-weight: 800; font-size: 18px; color: var(--text-dark);">{{ hostel.name }}</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> {{ hostel.location }}
+            </div>
+            
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px; line-height: 1.5;">
+                {{ hostel.description|truncatechars:100 }}
+            </p>
+
+            <div class="hostel-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Session Fee</span>
+                    <span class="meta-val">₦{{ hostel.price_per_session|floatformat:2 }}</span>
+                </div>
+                <div class="meta-item" style="text-align: right;">
+                    <span class="meta-label">Availability</span>
+                    <span class="meta-val" style="color: #059669;">{{ hostel.available_beds }} Beds Left</span>
+                </div>
+            </div>
+
+            <a href="#" class="btn" style="width: 100%; background: var(--primary-blue); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; margin-top: 20px; display: block; text-align: center; text-decoration: none; font-size: 14px;">
+                View Available Rooms
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; padding: 80px 40px; text-align: center;">
+        <div style="font-size: 48px; color: #cbd5e1; margin-bottom: 20px;"><i class="fas fa-hotel"></i></div>
+        <h3 style="font-size: 18px; font-weight: 700; color: #1e293b;">No Hostels Available</h3>
+        <p style="color: #64748b; margin-top: 8px;">Check back later when the accommodation window opens.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

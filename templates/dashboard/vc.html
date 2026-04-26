@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block page_title %}Vice Chancellor Dashboard{% endblock %}{% block content %}
+<div class="welcome-banner" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);">
+  <div><div class="welcome-title">Executive Overview <i data-lucide="crown" class="inline-block w-6 h-6 ml-1"></i></div><div class="welcome-subtitle">Vice Chancellor — University-wide insight</div></div>
+</div>
+<div class="grid-stats mb-6">
+  <div class="stat-card"><div class="stat-icon blue"><i data-lucide="graduation-cap"></i></div><div class="stat-info"><div class="stat-label">Total Students</div><div class="stat-value">{{ total_students }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon teal"><i data-lucide="users"></i></div><div class="stat-info"><div class="stat-label">Total Staff</div><div class="stat-value">{{ total_staff }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon amber"><i data-lucide="book"></i></div><div class="stat-info"><div class="stat-label">Active Courses</div><div class="stat-value">{{ total_courses }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon green"><i data-lucide="banknote"></i></div><div class="stat-info"><div class="stat-label">Total Payments</div><div class="stat-value">{{ total_payments }}</div></div></div>
+</div>
+<div class="quick-actions mb-6">
+  <a href="{% url 'portal:reports' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="bar-chart-3"></i></span><span class="quick-action-label">Academic Reports</span></a>
+  <a href="{% url 'portal:fee_management' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="wallet"></i></span><span class="quick-action-label">Financial Summary</span></a>
+  <a href="{% url 'portal:announcements' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="megaphone"></i></span><span class="quick-action-label">Broadcast Message</span></a>
+</div>
+{% endblock %}

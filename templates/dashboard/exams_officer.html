@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block page_title %}Exams Officer Dashboard{% endblock %}{% block content %}
+<div class="welcome-banner"><div><div class="welcome-title">Exams & Records Office <i data-lucide="file-signature" class="inline-block w-6 h-6 ml-1"></i></div><div class="welcome-subtitle">Manage results, scoresheets, and transcript requests</div></div></div>
+<div class="grid-stats mb-6">
+  <div class="stat-card"><div class="stat-icon amber"><i data-lucide="clock"></i></div><div class="stat-info"><div class="stat-label">Approved (to release)</div><div class="stat-value">{{ pending_results }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon green"><i data-lucide="check-circle"></i></div><div class="stat-info"><div class="stat-label">Published Results</div><div class="stat-value">{{ published_results }}</div></div></div>
+</div>
+<div class="quick-actions mb-6">
+  <a href="{% url 'portal:scoresheet' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="file-text"></i></span><span class="quick-action-label">Scoresheet Mgmt</span></a>
+  <a href="{% url 'portal:reports' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="bar-chart-3"></i></span><span class="quick-action-label">Results Reports</span></a>
+  <a href="{% url 'portal:announcements' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="megaphone"></i></span><span class="quick-action-label">Announcements</span></a>
+</div>
+{% endblock %}

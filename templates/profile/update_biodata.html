@@ -1,0 +1,260 @@
+{% extends 'base_student.html' %}
+{% load static %}
+{% block page_title %}Update Biodata{% endblock %}
+
+{% block content %}
+<div style="max-width:900px;margin:0 auto;">
+
+  <!-- Banner -->
+  <div class="card" style="margin-bottom:24px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#1565C0,#0D47A1);padding:28px 32px;color:white;display:flex;align-items:center;gap:20px;">
+      <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-user-edit" style="font-size:24px;"></i>
+      </div>
+      <div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">Update Biodata</h2>
+        <p style="font-size:13px;opacity:0.85;">{{ profile.matriculation_number }} — {{ profile.department }}</p>
+      </div>
+      {% if not profile.profile_completed %}
+      <div style="margin-left:auto;background:rgba(255,193,7,0.2);border:1px solid rgba(255,193,7,0.5);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;">
+        <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i> First-time Setup
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div style="padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:13px;
+    {% if msg.tags == 'error' %}background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;
+    {% elif msg.tags == 'success' %}background:#dcfce7;border:1px solid #86efac;color:#166534;
+    {% else %}background:#e0f2fe;border:1px solid #7dd3fc;color:#0c4a6e;{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ROW 0: Read-only Identity (Name, Matric, Dept, Level - LOCKED) -->
+    <div class="card" style="margin-bottom:20px;border:2px solid #e0f2fe;">
+      <div class="card-header" style="background:#f0f9ff;">
+        <span class="card-title"><i class="fas fa-lock" style="color:#64748b;margin-right:8px;"></i>Academic Identity <span style="font-size:11px;font-weight:400;color:#64748b;margin-left:8px;">(cannot be changed — contact Registrar)</span></span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+          <div>
+            <label class="form-label-sm">Full Name</label>
+            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:not-allowed;user-select:none;">
+              {{ request.user.get_full_name }}
+            </div>
+          </div>
+          <div>
+            <label class="form-label-sm">Matric Number</label>
+            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:not-allowed;font-family:monospace;font-size:13px;">
+              {{ profile.matriculation_number|default:"—" }}
+            </div>
+          </div>
+          <div>
+            <label class="form-label-sm">Department</label>
+            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:not-allowed;">
+              {{ profile.department|default:profile.department_code|default:"—" }}
+            </div>
+          </div>
+          <div>
+            <label class="form-label-sm">Level</label>
+            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:not-allowed;">
+              {{ profile.level|default:"100" }} Level
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 1: Personal Info -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-user" style="color:#1565C0;margin-right:8px;"></i>Personal Information</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+
+          <div>
+            <label class="form-label-sm">Phone Number</label>
+            <input type="tel" name="phone_number" class="form-input"
+                   value="{{ request.user.phone_number|default:'' }}"
+                   placeholder="+234 xxx xxx xxxx">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Gender</label>
+            <select name="gender" class="form-input">
+              <option value="">-- Select --</option>
+              <option value="male" {% if request.user.gender == 'male' %}selected{% endif %}>Male</option>
+              <option value="female" {% if request.user.gender == 'female' %}selected{% endif %}>Female</option>
+              <option value="other" {% if request.user.gender == 'other' %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label-sm">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-input"
+                   value="{{ request.user.date_of_birth|date:'Y-m-d'|default:'' }}">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Religion</label>
+            <input type="text" name="religion" class="form-input"
+                   value="{{ profile.religion|default:'' }}" placeholder="e.g. Islam / Christianity">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Nationality</label>
+            <input type="text" name="nationality" class="form-input"
+                   value="{{ profile.nationality|default:'Nigerian' }}" placeholder="Nigerian">
+          </div>
+
+          <div>
+            <label class="form-label-sm">State of Origin</label>
+            <input type="text" name="state_of_origin" class="form-input"
+                   value="{{ profile.state_of_origin|default:'' }}" placeholder="e.g. Kaduna">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Local Government Area</label>
+            <input type="text" name="local_government" class="form-input"
+                   value="{{ profile.local_government|default:'' }}" placeholder="e.g. Sanga">
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="form-label-sm">Home Address</label>
+            <textarea name="address" class="form-input" rows="2"
+                      placeholder="Enter your home address">{{ request.user.address|default:'' }}</textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Next of Kin -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-users" style="color:#1565C0;margin-right:8px;"></i>Next of Kin</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+
+          <div>
+            <label class="form-label-sm">Full Name</label>
+            <input type="text" name="next_of_kin_name" class="form-input"
+                   value="{{ profile.next_of_kin_name|default:'' }}" placeholder="Next of kin name">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Phone Number</label>
+            <input type="tel" name="next_of_kin_phone" class="form-input"
+                   value="{{ profile.next_of_kin_phone|default:'' }}" placeholder="+234 xxx xxx xxxx">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Relationship</label>
+            <input type="text" name="next_of_kin_relationship" class="form-input"
+                   value="{{ profile.next_of_kin_relationship|default:'' }}"
+                   placeholder="e.g. Parent / Guardian / Sibling">
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="form-label-sm">Address</label>
+            <textarea name="next_of_kin_address" class="form-input" rows="2"
+                      placeholder="Next of kin address">{{ profile.next_of_kin_address|default:'' }}</textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Sponsor -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-hand-holding-heart" style="color:#1565C0;margin-right:8px;"></i>Sponsor / Guardian Information</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+
+          <div>
+            <label class="form-label-sm">Sponsor Name</label>
+            <input type="text" name="sponsor_name" class="form-input"
+                   value="{{ profile.sponsor_name|default:'' }}" placeholder="Full name of sponsor">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Sponsor Phone</label>
+            <input type="tel" name="sponsor_phone" class="form-input"
+                   value="{{ profile.sponsor_phone|default:'' }}" placeholder="+234 xxx xxx xxxx">
+          </div>
+
+          <div>
+            <label class="form-label-sm">Sponsor Occupation</label>
+            <input type="text" name="sponsor_occupation" class="form-input"
+                   value="{{ profile.sponsor_occupation|default:'' }}" placeholder="e.g. Civil Servant, Farmer">
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: Profile Picture -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-camera" style="color:#1565C0;margin-right:8px;"></i>Profile Photo</span>
+      </div>
+      <div class="card-body" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+        {% if request.user.profile_picture %}
+        <img src="{{ request.user.profile_picture.url }}" alt="Current Photo"
+             style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #1565C0;">
+        {% else %}
+        <div style="width:80px;height:80px;border-radius:50%;background:#e0f2fe;display:flex;align-items:center;justify-content:center;border:3px solid #1565C0;">
+          <span style="font-size:30px;font-weight:700;color:#1565C0;">{{ request.user.first_name|first|upper }}</span>
+        </div>
+        {% endif %}
+        <div style="flex:1;">
+          <label class="form-label-sm">Upload New Photo (Passport Photo)</label>
+          <input type="file" name="profile_picture" accept="image/*" class="form-input"
+                 style="padding:8px;cursor:pointer;">
+          <div style="font-size:11px;color:#6b7280;margin-top:4px;">Supported: JPG, PNG. Max size: 2MB. Clear passport photo recommended.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;">
+      <a href="{% url 'portal:profile' %}"
+         style="padding:12px 24px;background:#f3f4f6;border:1px solid #d1d5db;color:#374151;border-radius:10px;text-decoration:none;font-size:14px;font-weight:500;">
+        <i class="fas fa-times" style="margin-right:6px;"></i> Cancel
+      </a>
+      <button type="submit"
+              style="padding:12px 32px;background:linear-gradient(135deg,#1565C0,#0D47A1);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;">
+        <i class="fas fa-save" style="margin-right:8px;"></i> Save Biodata
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<style>
+.form-label-sm {
+  display: block; font-size: 12px; font-weight: 600; color: #374151;
+  margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.form-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #e5e7eb; border-radius: 8px;
+  font-size: 14px; font-family: 'Inter', sans-serif; color: #1f2937;
+  transition: border-color 0.2s; background: white;
+}
+.form-input:focus { outline: none; border-color: #1565C0; }
+textarea.form-input { resize: vertical; min-height: 60px; }
+select.form-input { cursor: pointer; }
+</style>
+{% endblock %}

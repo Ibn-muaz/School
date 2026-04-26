@@ -1,0 +1,41 @@
+{% with request.resolver_match.url_name as url_name %}
+<div class="sidebar-section-label">Admissions</div>
+<a href="{% url 'admissions:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Dashboard</span><span class="nav-tooltip">Dashboard</span>
+</a>
+<a href="{% url 'admissions:complete_profile' %}" class="nav-item {% if url_name == 'complete_profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-plus" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Complete Profile</span><span class="nav-tooltip">Complete Profile</span>
+</a>
+<a href="{% url 'admissions:educational_info' %}" class="nav-item {% if url_name == 'educational_info' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="graduation-cap" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Educational Info</span><span class="nav-tooltip">Educational Info</span>
+</a>
+<a href="{% url 'admissions:select_programs' %}" class="nav-item {% if url_name == 'select_programs' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="list-checks" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Select Programs</span><span class="nav-tooltip">Select Programs</span>
+</a>
+<a href="{% url 'admissions:upload_documents' %}" class="nav-item {% if url_name == 'upload_documents' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="upload-cloud" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Upload Documents</span><span class="nav-tooltip">Upload Documents</span>
+</a>
+<a href="{% url 'admissions:payment' %}" class="nav-item {% if url_name == 'payment' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Payment</span><span class="nav-tooltip">Payment</span>
+</a>
+<a href="{% url 'admissions:review_submission' %}" class="nav-item {% if url_name == 'review_submission' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="clipboard-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Review & Submit</span><span class="nav-tooltip">Review & Submit</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Profile</span><span class="nav-tooltip">My Profile</span>
+</a>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);" onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Logout</span><span class="nav-tooltip">Logout</span>
+</a>
+{% endwith %}

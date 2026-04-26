@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load static %}
+{% block page_title %}My Documents{% endblock %}
+{% block content %}
+<style>
+@media print {
+  .no-print { display:none !important; }
+  .print-section { display:block !important; }
+  body > * { display:none !important; }
+  #printable { display:block !important; position:absolute; top:0; left:0; width:100%; }
+  #printable * { visibility:visible; }
+}
+</style>
+
+<div class="flex-between mb-6 no-print">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;">My Documents</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Print your course form, exam card and payment receipt</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-bottom:28px;" class="no-print">
+
+  {# ── Course Registration Form ── #}
+  <div class="card" style="border-top:4px solid var(--color-primary);">
+    <div class="card-body" style="text-align:center;padding:28px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">📝</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Course Registration Form</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Official form showing all registered courses for the current semester</div>
+      {% if registrations %}
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="printDoc('course-form')">🖨️ Print Form</button>
+      {% else %}
+        <div class="btn btn-outline" style="width:100%;justify-content:center;cursor:not-allowed;opacity:.6;">No courses registered</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Exam Card ── #}
+  <div class="card" style="border-top:4px solid var(--color-secondary);">
+    <div class="card-body" style="text-align:center;padding:28px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">🎓</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Examination Card</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Your exam admission card — required for all examinations</div>
+      {% if fees_cleared and registrations %}
+        <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="printDoc('exam-card')">🖨️ Print Exam Card</button>
+      {% elif not fees_cleared %}
+        <div style="font-size:12px;color:var(--color-danger);background:#FEE2E2;padding:8px;border-radius:6px;margin-bottom:12px;">⚠️ Clear fees to print exam card</div>
+        <a href="{% url 'portal:student_fees' %}" class="btn btn-danger" style="width:100%;justify-content:center;">Pay Fees</a>
+      {% else %}
+        <div class="btn btn-outline" style="width:100%;justify-content:center;cursor:not-allowed;opacity:.6;">No courses registered</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Payment Receipt ── #}
+  <div class="card" style="border-top:4px solid var(--color-success);">
+    <div class="card-body" style="text-align:center;padding:28px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">🧾</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Payment Receipt</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Official fee payment receipt showing cleared transactions</div>
+      {% if payments %}
+        <div style="margin-top:10px;">
+          <a href="{% url 'portal:session_receipt' %}" class="btn btn-primary" style="width:100%;justify-content:center;">🖨️ Print Official Session Receipt</a>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center;">Generates a single receipt for all cleared payments</p>
+        </div>
+      {% else %}
+        <div class="btn btn-outline" style="width:100%;justify-content:center;cursor:not-allowed;opacity:.6;">No payments found</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════
+   PRINTABLE SECTION — hidden on screen, shown on print
+   ══════════════════════════════════════════════════════════════ #}
+<div id="printable" style="display:none;">
+
+  {# ── Course Registration Form Print ── #}
+  <div id="course-form" class="print-section" style="display:none; padding:32px; font-family:'Inter',sans-serif; font-size:13px;">
+    <div style="text-align:center;border-bottom:3px double #1A3C6E;padding-bottom:16px;margin-bottom:20px;">
+      <img src="{% static 'img/logo.png' %}" style="width:70px;height:70px;object-fit:contain;border-radius:50%;margin-bottom:8px;" alt="Logo">
+      <div style="font-size:16px;font-weight:800;color:#1A3C6E;">{{ college_name }}</div>
+      <div style="font-size:11px;color:#555;">{{ college_motto }}</div>
+      <div style="font-size:15px;font-weight:700;margin-top:10px;letter-spacing:.04em;">COURSE REGISTRATION FORM</div>
+      <div style="font-size:12px;color:#666;">Academic Session: 2024/2025</div>
+    </div>
+    {% if profile %}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;">
+      <tr><td style="padding:5px;width:140px;color:#666;">Name:</td><td style="padding:5px;font-weight:700;">{{ user.get_full_name }}</td><td style="padding:5px;width:140px;color:#666;">Matric No:</td><td style="padding:5px;font-weight:700;">{{ profile.matriculation_number }}</td></tr>
+      <tr><td style="padding:5px;color:#666;">Department:</td><td style="padding:5px;font-weight:700;">{{ profile.department }}</td><td style="padding:5px;color:#666;">Level:</td><td style="padding:5px;font-weight:700;">{{ profile.level }}</td></tr>
+      <tr><td style="padding:5px;color:#666;">Programme:</td><td style="padding:5px;font-weight:700;" colspan="3">{{ profile.program }}</td></tr>
+    </table>
+    {% endif %}
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+      <thead><tr style="background:#1A3C6E;color:#fff;">
+        <th style="padding:8px;text-align:left;">S/N</th>
+        <th style="padding:8px;text-align:left;">Course Code</th>
+        <th style="padding:8px;text-align:left;">Course Title</th>
+        <th style="padding:8px;">Units</th>
+        <th style="padding:8px;">Semester</th>
+      </tr></thead>
+      <tbody>
+        {% for r in registrations %}
+        <tr style="border-bottom:1px solid #ddd;">
+          <td style="padding:7px;">{{ forloop.counter }}</td>
+          <td style="padding:7px;font-weight:600;">{{ r.course_code }}</td>
+          <td style="padding:7px;">{{ r.course_title }}</td>
+          <td style="padding:7px;text-align:center;">{{ r.credit_units }}</td>
+          <td style="padding:7px;text-align:center;">{{ r.get_semester_display }}</td>
+        </tr>
+        {% endfor %}
+        <tr style="background:#f8f9fa;font-weight:700;">
+          <td colspan="3" style="padding:8px;text-align:right;">Total Credit Units:</td>
+          <td style="padding:8px;text-align:center;">{{ registrations|length }}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin-top:32px;">
+      <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;text-align:center;">Student's Signature &amp; Date</div>
+      <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;text-align:center;">HOD's Signature &amp; Stamp</div>
+      <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;text-align:center;">Dean's Signature &amp; Stamp</div>
+    </div>
+  </div>
+
+  {# ── Exam Card Print ── #}
+  <div id="exam-card" class="print-section" style="display:none; padding:32px; font-family:'Inter',sans-serif; font-size:13px;">
+    <div style="text-align:center;border-bottom:3px double #00897B;padding-bottom:16px;margin-bottom:20px;">
+      <img src="{% static 'img/logo.png' %}" style="width:70px;height:70px;object-fit:contain;border-radius:50%;margin-bottom:8px;" alt="Logo">
+      <div style="font-size:16px;font-weight:800;color:#00897B;">{{ college_name }}</div>
+      <div style="font-size:15px;font-weight:700;margin-top:10px;letter-spacing:.04em;">EXAMINATION CARD</div>
+      <div style="font-size:12px;color:#666;">Academic Session: 2024/2025</div>
+    </div>
+    <div style="display:flex;gap:24px;margin-bottom:20px;">
+      <div style="width:90px;height:110px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:4px;background:#f8f9fa;">
+        <span style="font-size:10px;color:#999;text-align:center;">Passport Photo</span>
+      </div>
+      {% if profile %}
+      <table style="flex:1;border-collapse:collapse;font-size:12px;">
+        <tr><td style="padding:5px;color:#666;width:130px;">Name:</td><td style="padding:5px;font-weight:700;">{{ user.get_full_name }}</td></tr>
+        <tr><td style="padding:5px;color:#666;">Matric No:</td><td style="padding:5px;font-weight:700;">{{ profile.matriculation_number }}</td></tr>
+        <tr><td style="padding:5px;color:#666;">Department:</td><td style="padding:5px;font-weight:700;">{{ profile.department }}</td></tr>
+        <tr><td style="padding:5px;color:#666;">Level:</td><td style="padding:5px;font-weight:700;">{{ profile.level }}</td></tr>
+        <tr><td style="padding:5px;color:#666;">Fees Status:</td><td style="padding:5px;font-weight:700;color:green;">✅ CLEARED</td></tr>
+      </table>
+      {% endif %}
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+      <thead><tr style="background:#00897B;color:#fff;">
+        <th style="padding:8px;text-align:left;">Course Code</th>
+        <th style="padding:8px;text-align:left;">Course Title</th>
+        <th style="padding:8px;text-align:center;">Units</th>
+      </tr></thead>
+      <tbody>
+        {% for r in registrations %}
+        <tr style="border-bottom:1px solid #ddd;">
+          <td style="padding:7px;font-weight:600;">{{ r.course_code }}</td>
+          <td style="padding:7px;">{{ r.course_title }}</td>
+          <td style="padding:7px;text-align:center;">{{ r.credit_units }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="background:#D1FAE5;border:1px solid #6EE7B7;padding:10px 16px;border-radius:6px;font-size:11px;text-align:center;margin-bottom:20px;">
+      ✅ This student has cleared all fees and is eligible to sit examinations for the 2024/2025 academic session.
+    </div>
+    <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;text-align:center;max-width:240px;margin:0 auto;">Registrar's Signature &amp; Stamp</div>
+  </div>
+
+  {# ── Payment Receipt Print ── #}
+  <div id="payment-receipt" class="print-section" style="display:none; padding:32px; font-family:'Inter',sans-serif; font-size:13px;">
+    <div style="text-align:center;border-bottom:3px double #1A3C6E;padding-bottom:16px;margin-bottom:20px;">
+      <img src="{% static 'img/logo.png' %}" style="width:70px;height:70px;object-fit:contain;border-radius:50%;margin-bottom:8px;" alt="Logo">
+      <div style="font-size:16px;font-weight:800;color:#1A3C6E;">{{ college_name }}</div>
+      <div style="font-size:15px;font-weight:700;margin-top:10px;">PAYMENT RECEIPT</div>
+    </div>
+    {% if profile %}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;">
+      <tr><td style="padding:5px;color:#666;width:140px;">Name:</td><td style="padding:5px;font-weight:700;">{{ user.get_full_name }}</td></tr>
+      <tr><td style="padding:5px;color:#666;">Matric No:</td><td style="padding:5px;font-weight:700;">{{ profile.matriculation_number }}</td></tr>
+      <tr><td style="padding:5px;color:#666;">Department:</td><td style="padding:5px;font-weight:700;">{{ profile.department }}</td></tr>
+    </table>
+    {% endif %}
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;">
+      <thead><tr style="background:#1A3C6E;color:#fff;">
+        <th style="padding:8px;text-align:left;">Date</th>
+        <th style="padding:8px;text-align:left;">Reference</th>
+        <th style="padding:8px;text-align:left;">Purpose</th>
+        <th style="padding:8px;text-align:right;">Amount (₦)</th>
+        <th style="padding:8px;text-align:center;">Status</th>
+      </tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr style="border-bottom:1px solid #ddd;">
+          <td style="padding:7px;">{{ p.payment_date|date:"d M Y" }}</td>
+          <td style="padding:7px;font-family:monospace;">{{ p.transaction_reference }}</td>
+          <td style="padding:7px;">{{ p.purpose|default:"Tuition Fee" }}</td>
+          <td style="padding:7px;text-align:right;font-weight:600;">{{ p.amount|floatformat:2 }}</td>
+          <td style="padding:7px;text-align:center;color:green;font-weight:600;">PAID</td>
+        </tr>
+        {% endfor %}
+        <tr style="background:#f8f9fa;font-weight:700;">
+          <td colspan="3" style="padding:8px;text-align:right;">Total Paid:</td>
+          <td style="padding:8px;text-align:right;">₦{{ total_paid|floatformat:2 }}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>{# /printable #}
+
+<script>
+function printDoc(id) {
+  // hide all print sections, show only the target
+  document.querySelectorAll('.print-section').forEach(el => el.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  document.getElementById('printable').style.display = 'block';
+  window.print();
+  // restore after print
+  setTimeout(() => {
+    document.getElementById('printable').style.display = 'none';
+    document.querySelectorAll('.print-section').forEach(el => el.style.display = 'none');
+  }, 1000);
+}
+</script>
+{% endblock %}

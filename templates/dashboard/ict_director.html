@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block page_title %}ICT Director Dashboard{% endblock %}
+
+{% block content %}
+<div class="welcome-banner">
+  <div>
+    <div class="welcome-title">System Control Centre 🖥️</div>
+    <div class="welcome-subtitle">ICT Director — Full system visibility and control</div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:13px; opacity:0.8; margin-bottom:4px;">Server Status</div>
+    <span class="badge badge-success" style="font-size:14px;">🟢 Online</span>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="grid-stats mb-6">
+  <div class="stat-card">
+    <div class="stat-icon blue"><i data-lucide="users"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value">{{ total_users }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon {% if locked_accounts > 0 %}red{% else %}green{% endif %}"><i data-lucide="lock"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Locked Accounts</div>
+      <div class="stat-value">{{ locked_accounts }}</div>
+      <div class="stat-trend {% if locked_accounts > 0 %}down{% else %}up{% endif %}">
+        {% if locked_accounts == 0 %}All clear{% else %}Needs review{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><i data-lucide="key-round"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Pending OTPs</div>
+      <div class="stat-value">{{ pending_otps }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon violet"><i data-lucide="shield"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Active Permissions</div>
+      <div class="stat-value">{{ pending_permissions }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="mb-6">
+  <h2 class="card-title mb-4">Quick Actions</h2>
+  <div class="quick-actions">
+    <a href="{% url 'portal:user_management' %}" class="quick-action-btn">
+      <span class="quick-action-icon"><i data-lucide="users"></i></span><span class="quick-action-label">Manage Users</span>
+    </a>
+    <a href="{% url 'portal:audit_logs' %}" class="quick-action-btn">
+      <span class="quick-action-icon"><i data-lucide="clipboard-list"></i></span><span class="quick-action-label">Audit Logs</span>
+    </a>
+    <a href="{% url 'portal:otp_manager' %}" class="quick-action-btn">
+      <span class="quick-action-icon"><i data-lucide="key"></i></span><span class="quick-action-label">OTP Manager</span>
+    </a>
+    <a href="{% url 'portal:general_permissions' %}" class="quick-action-btn">
+      <span class="quick-action-icon"><i data-lucide="unlock"></i></span><span class="quick-action-label">Permissions</span>
+    </a>
+  </div>
+</div>
+
+<!-- Recent Audit Logs -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🔍 Recent Audit Activity</span>
+    <a href="{% url 'portal:audit_logs' %}" class="btn btn-ghost btn-sm">View all →</a>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if recent_audit_logs %}
+    <div class="table-container" style="border:none; border-radius:0;">
+      <table>
+        <thead>
+          <tr><th>Time</th><th>User</th><th>Action</th><th>Resource</th><th>IP</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for log in recent_audit_logs %}
+          <tr>
+            <td style="font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--text-muted);">
+              {{ log.created_at|date:"d M H:i" }}
+            </td>
+            <td>
+              <span style="font-weight:500;">{{ log.user.username|default:"—" }}</span>
+            </td>
+            <td>
+              <span class="badge badge-info font-mono" style="font-size:10px;">{{ log.action }}</span>
+            </td>
+            <td style="font-size:13px; color:var(--text-muted);">{{ log.resource_type }} {{ log.resource_id|truncatechars:20 }}</td>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:12px;">{{ log.ip_address }}</td>
+            <td>
+              {% if log.status == 'success' %}
+                <span class="badge badge-success">✓ OK</span>
+              {% elif log.status == 'failed' %}
+                <span class="badge badge-danger">✗ Failed</span>
+              {% else %}
+                <span class="badge badge-warning">⚠ Warn</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📋</div>
+      <div class="empty-state-title">No audit entries yet</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ user_theme|default:'light' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block page_title %}{{ college_name }}{% endblock %} — Portal</title>
+  <meta name="description" content="{% block meta_description %}{{ college_name }} Management Portal{% endblock %}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Portal CSS -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ─── Sidebar ─────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <!-- Red accent stripe at very top -->
+  <div style="height:4px;background:linear-gradient(90deg,#C62828,#EF5350,#C62828);flex-shrink:0;"></div>
+
+  <!-- Logo + mobile close button -->
+  <div class="sidebar-logo" style="gap:10px; justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <img src="{% static 'img/logo.png' %}" alt="College Logo"
+           style="width:38px;height:38px;border-radius:6px;object-fit:contain;background:white;padding:2px;border:2px solid rgba(198,40,40,0.5);flex-shrink:0;">
+      <div style="overflow:hidden;">
+        <span class="sidebar-logo-text" style="font-size:13px;line-height:1.2;display:block;">{{ college_name|truncatechars:28 }}</span>
+        <span class="sidebar-logo-text" style="font-size:9px;opacity:0.5;font-weight:400;letter-spacing:.05em;display:block;">
+          {% if user.role == 'student' %}STUDENT PORTAL{% else %}{{ user_role_display|upper }} PORTAL{% endif %}
+        </span>
+      </div>
+    </div>
+    <!-- Mobile-only close (X) button -->
+    <button id="sidebar-close-btn"
+            aria-label="Close menu"
+            style="display:none;background:rgba(255,255,255,0.1);border:none;border-radius:6px;
+                   width:32px;height:32px;cursor:pointer;color:#fff;flex-shrink:0;
+                   align-items:center;justify-content:center;">
+      <i data-lucide="x" style="width:18px;height:18px;"></i>
+    </button>
+  </div>
+
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav" id="sidebar-nav">
+    {% block sidebar_nav %}
+      {% if current_sidebar %}
+        {% include current_sidebar %}
+      {% endif %}
+    {% endblock %}
+  </nav>
+
+  <!-- Footer: college colour bar + Collapse Toggle -->
+  <div class="sidebar-footer">
+    <!-- Colour bar: blue | white | red -->
+    <div style="display:flex;height:3px;border-radius:999px;overflow:hidden;margin-bottom:10px;opacity:0.6;">
+      <div style="flex:1;background:#4FC3F7;"></div>
+      <div style="flex:1;background:rgba(255,255,255,0.7);"></div>
+      <div style="flex:1;background:#EF5350;"></div>
+    </div>
+    <button class="nav-item w-full" id="sidebar-toggle-btn" title="Toggle sidebar">
+      <span class="nav-icon"><i data-lucide="panel-left-close" style="width:18px;height:18px;"></i></span>
+      <span class="nav-label" style="font-size:13px;">Collapse</span>
+    </button>
+  </div>
+</aside>
+
+
+<!-- ─── Main Wrapper ─────────────────────────────────────── -->
+<div class="main-wrap" id="main-wrap">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-left">
+      <!-- Hamburger (mobile) -->
+      <button class="hamburger-btn" id="mobile-menu-btn" aria-label="Open menu">
+        <i data-lucide="menu" style="width:20px;height:20px;"></i>
+      </button>
+
+      <!-- Page Heading (uses page_title context var set by each view) -->
+      <h1 class="page-title">{% block page_heading %}{{ page_title|default:"Dashboard" }}{% endblock %}</h1>
+    </div>
+
+    <div class="navbar-right">
+      <!-- Theme Toggle -->
+      <button class="hamburger-btn" id="theme-toggle-btn" title="Toggle dark mode">
+        <i data-lucide="moon" style="width:18px;height:18px;" id="theme-icon-moon"></i>
+        <i data-lucide="sun" style="width:18px;height:18px; display:none;" id="theme-icon-sun"></i>
+      </button>
+
+      <!-- Notification Bell -->
+      <div class="profile-dropdown" style="position:relative;">
+        <button class="notif-btn" id="notif-btn" aria-label="Notifications">
+          <i data-lucide="bell" style="width:20px;height:20px;"></i>
+          {% if unread_count > 0 %}
+          <span class="notif-badge">{{ unread_count }}</span>
+          {% endif %}
+        </button>
+
+        <!-- Notifications Dropdown -->
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-dropdown-header">
+            <span class="notif-dropdown-title">Notifications</span>
+            <a href="{% url 'portal:announcements' %}" style="font-size:12px; color:var(--color-primary-light);">View all</a>
+          </div>
+          {% if unread_notifications %}
+            {% for n in unread_notifications %}
+            <a class="notif-item unread" href="{% url 'portal:announcements' %}">
+              <div class="notif-dot"></div>
+              <div>
+                <div class="notif-text">{{ n.title }}</div>
+                <div class="notif-time">{{ n.created_at|timesince }} ago</div>
+              </div>
+            </a>
+            {% endfor %}
+          {% else %}
+            <div class="notif-item">
+              <div class="notif-text text-muted">No new notifications</div>
+            </div>
+          {% endif %}
+          <div class="notif-footer">
+            <a href="{% url 'portal:announcements' %}">See all announcements</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div class="profile-dropdown">
+        <button class="flex items-center gap-2 btn-ghost btn" id="profile-btn" style="padding:4px 8px;">
+          <div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div>
+          <div style="text-align:left; display:none;" class="md:block">
+            <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ user.get_full_name|default:user.username }}</div>
+            <span class="role-badge {{ user_role_badge_color }}" style="margin-top:2px;">{{ user_role_display }}</span>
+          </div>
+          <i data-lucide="chevron-down" style="width:14px;height:14px; color:var(--text-muted);"></i>
+        </button>
+
+        <!-- Profile Dropdown -->
+        <div class="dropdown-menu" id="profile-dropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-name">{{ user.get_full_name|default:user.username }}</div>
+            <div class="dropdown-email">{{ user.email|default:'—' }}</div>
+          </div>
+          <a href="{% url 'portal:profile' %}" class="dropdown-item">
+            <i data-lucide="user" style="width:15px;height:15px;"></i> My Profile
+          </a>
+          <a href="{% url 'portal:announcements' %}" class="dropdown-item">
+            <i data-lucide="bell" style="width:15px;height:15px;"></i> Announcements
+          </a>
+          <button class="dropdown-item" id="dropdown-theme-btn">
+            <i data-lucide="moon" style="width:15px;height:15px;" id="dd-theme-icon"></i>
+            <span id="dd-theme-label">Dark Mode</span>
+          </button>
+          <hr class="dropdown-divider">
+          <a href="{% url 'portal:logout' %}" class="dropdown-item danger"
+             onclick="return confirm('Are you sure you want to log out?')">
+            <i data-lucide="log-out" style="width:15px;height:15px;"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── Page Content ─────────────────────────────────── -->
+  <main class="main-content">
+    <!-- Django Messages (Flash notifications) -->
+    {% if messages %}
+    <div style="margin-bottom:16px;">
+      {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}"
+           role="alert">
+        <span>
+          {% if message.tags == 'error' %}⚠️{% elif message.tags == 'success' %}✅{% elif message.tags == 'warning' %}🔔{% else %}ℹ️{% endif %}
+        </span>
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div><!-- /main-wrap -->
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ─── Scripts ──────────────────────────────────────────── -->
+<script src="{% static 'js/portal.js' %}"></script>
+<script>
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

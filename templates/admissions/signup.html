@@ -1,0 +1,94 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block page_title %}New Application{% endblock %}
+
+{% block content %}
+<div class="auth-layout" style="background:#f7fafc;">
+  <div style="max-width: 500px; width: 100%; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 32px;">
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h2 style="font-size: 28px; font-weight: 850; color: #1a202c;">New application</h2>
+      <p style="color: #718096; margin-top: 8px;">Create your account to start your application.</p>
+    </div>
+
+    <form method="post" id="signup-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label class="form-label">Application type <span class="required">*</span></label>
+        <select class="form-control" name="app_type" required>
+          <option value="">Select Application Type</option>
+          <option value="utme">UTME (Undergraduate)</option>
+          <option value="de">Direct Entry (DE)</option>
+          <option value="sandwich">Sandwich Programme</option>
+          <option value="diploma">Diploma / Certificate</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name <span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon"><i data-lucide="user" style="width:16px;height:16px;"></i></span>
+          <input type="text" name="full_name" class="form-control" placeholder="Enter Surname Firstname Othernames" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email address <span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></span>
+          <input type="email" name="email" class="form-control" placeholder="name@example.com" required title="This will be used for OTP verification">
+        </div>
+        <p style="font-size:11px; color:#a0aec0; margin-top:4px;">A verification OTP will be sent to this email.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password <span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>
+          <input type="password" id="id_password" name="password" class="form-control" placeholder="Create a strong password" required>
+          <button type="button" class="password-toggle" onclick="togglePassword()">
+             <i data-lucide="eye" style="width:16px;height:16px;" id="pw-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm Password <span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon"><i data-lucide="check-shield" style="width:16px;height:16px;"></i></span>
+          <input type="password" name="confirm_password" class="form-control" placeholder="Repeat your password" required>
+        </div>
+      </div>
+
+      <div style="margin-top: 32px;">
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 48px; font-weight: 700;">
+          Proceed to Verification →
+        </button>
+      </div>
+
+      <div style="margin-top: 24px; text-align: center; border-top: 1px solid #edf2f7; padding-top: 16px;">
+        <p style="font-size: 14px; color: #4a5568;">
+          Already registered? 
+          <a href="{% url 'portal:login' %}" style="color: #3182ce; font-weight: 700; text-decoration: none;">Login</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function togglePassword() {
+    const input = document.getElementById('id_password');
+    const icon  = document.getElementById('pw-eye');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+      input.type = 'password';
+      icon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+  }
+</script>
+{% endblock %}

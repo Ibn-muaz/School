@@ -1,0 +1,113 @@
+{% extends base_template|default:"base.html" %}
+{% block page_title %}Clearance{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h2 style="font-size:20px;font-weight:700;">Departmental Clearance</h2>
+  <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Track your end-of-session clearance status</p>
+</div>
+
+<!-- Overall Status Banner -->
+<div class="welcome-banner mb-6"
+     style="{% if fees_cleared %}background:linear-gradient(135deg,#1B5E20,#2E7D32);{% else %}background:linear-gradient(135deg,#B71C1C,#C62828);{% endif %}border-bottom:none;">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div style="width:52px;height:52px;background:rgba(255,255,255,0.15);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      {% if fees_cleared %}
+        <i data-lucide="check-circle-2" style="width:28px;height:28px;"></i>
+      {% else %}
+        <i data-lucide="alert-triangle" style="width:28px;height:28px;"></i>
+      {% endif %}
+    </div>
+    <div>
+      <div class="welcome-title" style="font-size:18px;">
+        {% if fees_cleared %}Fees Cleared{% else %}Outstanding Fees{% endif %}
+      </div>
+      <div class="welcome-subtitle">
+        {% if fees_cleared %}Your school fees are cleared. Complete all clearance items below.
+        {% else %}You must clear your school fees before completing departmental clearance.{% endif %}
+      </div>
+    </div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:12px;opacity:0.75;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;">Steps</div>
+    <div style="font-size:28px;font-weight:700;">{{ clearance_items|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+      <i data-lucide="list-checks" style="width:15px;height:15px;color:var(--color-primary);"></i> Clearance Checklist
+    </span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th><th>Office</th><th style="text-align:center;">Status</th><th style="text-align:center;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in clearance_items %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+                {% if item.done %}background:#D1FAE5;{% else %}background:var(--color-primary-pale);{% endif %}">
+                {% if item.done %}
+                  <i data-lucide="check" style="width:14px;height:14px;color:#065F46;"></i>
+                {% else %}
+                  <i data-lucide="clock" style="width:14px;height:14px;color:var(--color-primary);"></i>
+                {% endif %}
+              </div>
+              <span style="font-weight:500;">{{ item.label }}</span>
+            </div>
+          </td>
+          <td style="color:var(--text-muted);font-size:13px;">{{ item.office }}</td>
+          <td style="text-align:center;">
+            {% if item.done %}
+              <span class="badge badge-success" style="display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="check" style="width:11px;height:11px;"></i> Cleared
+              </span>
+            {% else %}
+              <span class="badge badge-warning" style="display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="clock" style="width:11px;height:11px;"></i> Pending
+              </span>
+            {% endif %}
+          </td>
+          <td style="text-align:center;">
+            {% if not item.done %}
+              {% if item.label == "School Fees Payment" %}
+                <a href="{% url 'portal:student_fees' %}" class="btn btn-sm btn-primary" style="display:inline-flex;align-items:center;gap:6px;">
+                  <i data-lucide="credit-card" style="width:12px;height:12px;"></i> Pay Now
+                </a>
+              {% elif item.label == "Course Registration" %}
+                <a href="{% url 'portal:course_registration' %}" class="btn btn-sm btn-primary" style="display:inline-flex;align-items:center;gap:6px;">
+                  <i data-lucide="clipboard-list" style="width:12px;height:12px;"></i> Register
+                </a>
+              {% else %}
+                <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;justify-content:center;">
+                  <i data-lucide="map-pin" style="width:12px;height:12px;"></i> Visit office
+                </span>
+              {% endif %}
+            {% else %}
+              <span style="font-size:12px;color:var(--color-success);">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-body" style="background:var(--color-primary-pale);border-radius:var(--radius-lg);">
+    <div style="display:flex;gap:12px;align-items:flex-start;">
+      <i data-lucide="info" style="width:18px;height:18px;color:var(--color-primary);flex-shrink:0;margin-top:1px;"></i>
+      <div style="font-size:13px;color:var(--color-primary);line-height:1.7;">
+        <strong>Note:</strong> Library, Lab, Departmental, and Student Affairs clearances must be done physically at each office after all fees are paid. Bring your Student ID card and payment receipt.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

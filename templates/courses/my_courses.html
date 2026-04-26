@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block page_title %}My Courses{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;">My Course Allocations</h2>
+    <p style="color:var(--text-muted);font-size:14px;">Courses assigned to you for the current session</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">2024/2025 Allocations — {{ allocations|length }} courses</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if allocations %}
+    <div class="table-container" style="border:none;border-radius:0;">
+      <table>
+        <thead>
+          <tr><th>Course Code</th><th>Course Title</th><th>Level</th><th>Semester</th><th>Units</th><th>Session</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for a in allocations %}
+          <tr>
+            <td><span class="badge badge-info font-mono">{{ a.course_code }}</span></td>
+            <td>
+              <div style="font-weight:500;">{{ a.course_title }}</div>
+            </td>
+            <td>{{ a.level }} Level</td>
+            <td>{{ a.get_semester_display }}</td>
+            <td><strong>{{ a.credit_units }}</strong> units</td>
+            <td style="font-size:12px;color:var(--text-muted);">{{ a.academic_year }}</td>
+            <td>
+              <a href="{% url 'portal:score_entry' %}?allocation={{ a.pk }}" class="btn btn-sm btn-secondary">
+                ✏️ Enter Scores
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📚</div>
+      <div class="empty-state-title">No courses allocated yet</div>
+      <div class="empty-state-desc">Contact your HOD if you believe courses should be assigned to you.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

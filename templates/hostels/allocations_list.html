@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block page_title %}Hostel Allocations Management{% endblock %}
+
+{% block content %}
+<div class="flex-between mb-6">
+    <h2>Hostel Allocations</h2>
+    <a href="{% url 'hostels:create_allocation' %}" class="btn btn-primary btn-sm">
+        <i data-lucide="plus"></i> New Allocation
+    </a>
+</div>
+
+<!-- Status Filter -->
+<div class="card mb-6">
+    <div class="card-body">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="." class="btn btn-ghost btn-sm">All</a>
+            <a href="?status=pending_payment" class="btn btn-ghost btn-sm">
+                <i data-lucide="clock"></i> Pending Payment
+            </a>
+            <a href="?status=paid" class="btn btn-ghost btn-sm">
+                <i data-lucide="check-circle-2"></i> Paid
+            </a>
+            <a href="?status=expired" class="btn btn-ghost btn-sm">
+                <i data-lucide="alert-circle"></i> Expired
+            </a>
+            <a href="?status=cancelled" class="btn btn-ghost btn-sm">
+                <i data-lucide="x-circle"></i> Cancelled
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Allocations Table -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">All Allocations</span>
+    </div>
+    
+    <div class="card-body">
+        {% if allocations %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #BBDEFB;">
+                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #0277BD;">Student</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #0277BD;">Bed Space</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #0277BD;">Hostel</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #0277BD;">Status</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #0277BD;">Allocated</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #0277BD;">Payment</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600; color: #0277BD;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for allocation in allocations %}
+                    <tr style="border-bottom: 1px solid #BBDEFB; hover-background: #F0F7FF;">
+                        <td style="padding: 12px;">
+                            <strong>{{ allocation.student_name }}</strong><br>
+                            <span style="font-size: 12px; color: #90A4AE;">ID: {{ allocation.student_id }}</span>
+                        </td>
+                        <td style="padding: 12px;">{{ allocation.bed_identifier }}</td>
+                        <td style="padding: 12px;">{{ allocation.hostel_name }}</td>
+                        <td style="padding: 12px;">
+                            <span class="badge badge-{{ allocation.status|lower }}">
+                                {{ allocation.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 12px;">{{ allocation.allocated_at|date:"d M Y" }}</td>
+                        <td style="padding: 12px;">
+                            {% if allocation.payment_date %}
+                                {{ allocation.payment_date|date:"d M Y" }}
+                            {% else %}
+                                <span style="color: #FF7043;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <a href="{% url 'hostels:allocation_detail' allocation.id %}" class="btn btn-ghost btn-sm" title="Edit">
+                                <i data-lucide="edit-2"></i>
+                            </a>
+                            {% if allocation.status == 'pending_payment' %}
+                            <a href="{% url 'hostels:confirm_payment' allocation.id %}" 
+                               class="btn btn-ghost btn-sm" 
+                               onclick="return confirm('Mark as paid?')" 
+                               title="Confirm Payment">
+                                <i data-lucide="check"></i>
+                            </a>
+                            {% endif %}
+                            {% if allocation.status in 'pending_payment,expired' %}
+                            <a href="{% url 'hostels:cancel_allocation' allocation.id %}" 
+                               class="btn btn-ghost btn-sm" 
+                               style="color: #C62828;"
+                               onclick="return confirm('Cancel allocation?')" 
+                               title="Cancel">
+                                <i data-lucide="trash-2"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 40px;">
+            <i data-lucide="inbox" style="width: 64px; height: 64px; color: #BBDEFB; margin: 0 auto 16px;"></i>
+            <p style="color: #90A4AE;">No allocations found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+tr:hover {
+    background-color: #F0F7FF;
+}
+
+.badge-pending_payment {
+    background-color: #FFF3E0;
+    color: #E65100;
+}
+
+.badge-paid {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+}
+
+.badge-expired {
+    background-color: #FCE4EC;
+    color: #C2185B;
+}
+
+.badge-cancelled {
+    background-color: #F3E5F5;
+    color: #6A1B9A;
+}
+</style>
+
+{% endblock %}

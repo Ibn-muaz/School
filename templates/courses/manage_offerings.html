@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+{% block page_title %}Course Offerings Management{% endblock %}
+{% block content %}
+
+{# ── Page Header ──────────────────────────────────────────────── #}
+<div class="flex-between mb-6">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;">
+      <i data-lucide="book-open-check" style="width:22px;height:22px;color:var(--color-primary);"></i>
+      Course Offerings Management
+    </h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">
+      Exams Office · Add, edit and remove course offerings for each academic session
+    </p>
+  </div>
+  <button type="button" class="btn btn-primary" onclick="openModal('modal-add')"
+          style="display:flex;align-items:center;gap:8px;">
+    <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Add Course Offering
+  </button>
+</div>
+
+{# ── Filter Bar ───────────────────────────────────────────────── #}
+<div class="card mb-6" style="background:var(--color-primary-pale);border-color:var(--border-color);">
+  <div class="card-body" style="padding:16px 20px;">
+    <form method="get" style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
+
+      <div>
+        <label class="form-label" style="font-size:12px;">Academic Session</label>
+        <select name="academic_year" class="form-control" style="width:150px;" onchange="this.form.submit()">
+          <option value="2023/2024" {% if academic_year == '2023/2024' %}selected{% endif %}>2023/2024</option>
+          <option value="2024/2025" {% if academic_year == '2024/2025' %}selected{% endif %}>2024/2025</option>
+          <option value="2025/2026" {% if academic_year == '2025/2026' %}selected{% endif %}>2025/2026</option>
+          <option value="2026/2027" {% if academic_year == '2026/2027' %}selected{% endif %}>2026/2027</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" style="font-size:12px;">Programme</label>
+        <select name="programme" class="form-control" style="width:220px;" onchange="this.form.submit()">
+          <option value="">All Programmes</option>
+          {% for p in programmes %}
+          <option value="{{ p }}" {% if prog_filter == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" style="font-size:12px;">Level</label>
+        <select name="level" class="form-control" style="width:110px;" onchange="this.form.submit()">
+          <option value="">All Levels</option>
+          {% for l in levels %}
+          <option value="{{ l }}" {% if level_filter == l %}selected{% endif %}>{{ l }} Level</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-left:auto;display:flex;align-items:flex-end;gap:10px;">
+        <a href="?academic_year={{ academic_year }}" class="btn btn-outline btn-sm">
+          <i data-lucide="x" style="width:13px;height:13px;"></i> Clear
+        </a>
+
+        {# ── Bulk Activate ── #}
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="activate_all">
+          <input type="hidden" name="academic_year" value="{{ academic_year }}">
+          {% if prog_filter %}<input type="hidden" name="programme" value="{{ prog_filter }}">{% endif %}
+          <button type="submit" class="btn btn-secondary btn-sm"
+                  onclick="return confirm('Activate all{% if prog_filter %} {{ prog_filter }}{% endif %} courses for {{ academic_year }}?')"
+                  style="display:flex;align-items:center;gap:6px;">
+            <i data-lucide="zap" style="width:13px;height:13px;"></i> Activate All for {{ academic_year }}
+          </button>
+        </form>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{# ── Summary Stats ────────────────────────────────────────────── #}
+<div class="grid-stats mb-6" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
+  <div class="stat-card">
+    <div class="stat-icon blue"><i data-lucide="layers" style="width:20px;height:20px;"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Offerings</div>
+      <div class="stat-value">{{ offerings|length }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon teal"><i data-lucide="graduation-cap" style="width:20px;height:20px;"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Programmes</div>
+      <div class="stat-value">{{ grouped|length }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><i data-lucide="users" style="width:20px;height:20px;"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Enrolled</div>
+      <div class="stat-value">{% with total=0 %}{% for o in offerings %}{% endfor %}
+        {{ offerings|length }}{% endwith %}</div>
+    </div>
+  </div>
+</div>
+
+{# ── Grouped Tables ───────────────────────────────────────────── #}
+{% if grouped %}
+  {% for programme, levels in grouped.items %}
+
+  {# Programme banner #}
+  <div style="background:linear-gradient(90deg,var(--color-primary),var(--color-primary-light));
+              border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+              padding:12px 20px;color:#fff;display:flex;align-items:center;gap:10px;margin-top:28px;">
+    <i data-lucide="graduation-cap" style="width:18px;height:18px;opacity:.85;"></i>
+    <span style="font-weight:700;font-size:15px;letter-spacing:-.01em;">{{ programme }}</span>
+    <span style="font-size:12px;opacity:.7;margin-left:auto;border:1px solid rgba(255,255,255,.3);
+                 padding:2px 10px;border-radius:999px;">
+      {{ academic_year }}
+    </span>
+  </div>
+
+    {% for level, semesters in levels.items %}
+
+      {# Level + Semester sections #}
+      {% for semester, sem_offerings in semesters.items %}
+
+      <div class="card" style="border-radius:0;border-top:none;{% if forloop.last and levels|length == forloop.parentloop.counter %}border-radius:0 0 var(--radius-lg) var(--radius-lg);{% endif %}">
+        {# section header with red accent for semester #}
+        <div style="padding:10px 20px;background:#F0F7FF;border-bottom:1px solid var(--border-color);
+                    display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;border-radius:2px;background:var(--color-accent);display:inline-block;"></span>
+            <span style="font-weight:700;font-size:14px;color:var(--text-primary);">
+              {{ level }} Level · {{ semester|capfirst }} Semester
+            </span>
+            <span class="badge badge-info" style="font-size:11px;">
+              {{ sem_offerings|length }} course{{ sem_offerings|pluralize }}
+            </span>
+          </div>
+          {# Credit unit total #}
+          <div style="font-size:13px;color:var(--text-muted);">
+            Total:
+            <strong style="color:var(--color-primary);">
+              {% with total=0 %}
+                {% for o in sem_offerings %}{{ o.course.credit_units }}{% if not forloop.last %}+{% endif %}{% endfor %}
+              {% endwith %}
+            </strong> units
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;">S/N</th>
+                <th>Course Code</th>
+                <th>Course Title</th>
+                <th style="text-align:center;">Units</th>
+                <th>Lecturer</th>
+                <th>Venue</th>
+                <th>Schedule</th>
+                <th style="text-align:center;">Enrolled</th>
+                <th style="text-align:right;width:100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for offering in sem_offerings %}
+              <tr id="row-{{ offering.pk }}">
+                <td style="color:var(--text-muted);font-size:12px;">{{ forloop.counter }}</td>
+                <td>
+                  <span class="badge badge-info font-mono" style="font-size:12px;letter-spacing:.04em;">
+                    {{ offering.course.course_code }}
+                  </span>
+                </td>
+                <td>
+                  <div style="font-weight:500;font-size:14px;">{{ offering.course.course_title }}</div>
+                </td>
+                <td style="text-align:center;">
+                  <span style="font-weight:700;color:var(--color-primary);">{{ offering.course.credit_units }}</span>
+                </td>
+                <td style="font-size:13px;color:{% if offering.lecturer %}var(--text-primary){% else %}var(--text-muted){% endif %};">
+                  {% if offering.lecturer %}
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <i data-lucide="user" style="width:12px;height:12px;"></i>
+                      {{ offering.lecturer.get_full_name }}
+                    </div>
+                  {% else %}—{% endif %}
+                </td>
+                <td style="font-size:13px;color:var(--text-muted);">
+                  {{ offering.venue|default:"—" }}
+                </td>
+                <td style="font-size:12px;color:var(--text-muted);">
+                  {% if offering.day_of_week %}
+                    {{ offering.get_day_of_week_display }}
+                    {% if offering.start_time %}<br>{{ offering.start_time|time:"H:i" }}–{{ offering.end_time|time:"H:i" }}{% endif %}
+                  {% else %}—{% endif %}
+                </td>
+                <td style="text-align:center;">
+                  <span style="font-weight:600;{% if offering.enrolled_students > 0 %}color:var(--color-primary);{% else %}color:var(--text-muted);{% endif %}">
+                    {{ offering.enrolled_students }}
+                  </span>
+                  <span style="color:var(--text-muted);font-size:11px;">/ {{ offering.class_capacity }}</span>
+                </td>
+                <td style="text-align:right;">
+                  <div style="display:flex;gap:4px;justify-content:flex-end;">
+                    {# Edit button #}
+                    <button type="button"
+                            class="btn btn-ghost btn-sm"
+                            style="padding:4px 8px;"
+                            title="Edit offering"
+                            onclick="openEdit(
+                              '{{ offering.pk }}',
+                              '{{ offering.course.course_code }}',
+                              '{{ offering.course.course_title|escapejs }}',
+                              '{{ offering.class_capacity }}',
+                              '{{ offering.lecturer.pk|default:'' }}',
+                              '{{ offering.venue|default:'' }}',
+                              '{{ offering.day_of_week|default:'' }}',
+                              '{{ offering.start_time|default:'' }}',
+                              '{{ offering.end_time|default:'' }}'
+                            )">
+                      <i data-lucide="pencil" style="width:14px;height:14px;color:var(--color-primary);"></i>
+                    </button>
+                    {# Delete button #}
+                    <form method="post" style="display:inline;"
+                          onsubmit="return confirm('Remove {{ offering.course.course_code }} from {{ academic_year }}?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete">
+                      <input type="hidden" name="offering_id" value="{{ offering.pk }}">
+                      <button type="submit" class="btn btn-ghost btn-sm" style="padding:4px 8px;" title="Delete">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;color:var(--color-danger);"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">No offerings in this semester.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {% endfor %} {# /semesters #}
+    {% endfor %} {# /levels #}
+  {% endfor %} {# /programmes #}
+
+{% else %}
+<div class="card">
+  <div class="card-body">
+    <div class="empty-state">
+      <i data-lucide="book-x" style="width:52px;height:52px;margin-bottom:16px;color:var(--text-muted);"></i>
+      <div class="empty-state-title">No offerings for {{ academic_year }}</div>
+      <div class="empty-state-desc">Use <strong>"Activate All"</strong> to publish all courses for this session, or add them individually.</div>
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" onclick="openModal('modal-add')"
+                style="display:flex;align-items:center;gap:8px;">
+          <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Add Offering
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+{# ════════════════════════════════════════════════════════════
+   MODAL: Add New Offering
+   ════════════════════════════════════════════════════════════ #}
+<div id="modal-add" class="modal-overlay" style="display:none;">
+  <div class="card" style="width:100%;max-width:520px;margin:20px;">
+    <div class="card-header flex-between">
+      <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="plus-circle" style="width:16px;height:16px;color:var(--color-primary);"></i>
+        Add Course Offering
+      </span>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-add')">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+    <div class="card-body">
+      <form method="post" id="bulk-add-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="bulk_create">
+        <input type="hidden" name="academic_year" value="{{ academic_year }}">
+
+        <div class="grid-cols-2" style="gap:14px;margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label">Programme Filter</label>
+            <select id="prog-filter-add" class="form-control" onchange="filterCourseCheckboxes()">
+              <option value="">-- Select Programme --</option>
+              {% for p in programmes %}
+              <option value="{{ p }}">{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Level & Semester</label>
+            <div style="display:flex;gap:10px;">
+              <select id="level-filter-add" class="form-control" onchange="filterCourseCheckboxes()">
+                <option value="">Level</option>
+                {% for l in levels %}
+                <option value="{{ l }}">{{ l }}</option>
+                {% endfor %}
+              </select>
+              <select id="sem-filter-add" class="form-control" onchange="filterCourseCheckboxes()">
+                <option value="">Sem</option>
+                <option value="first">1st</option>
+                <option value="second">2nd</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Select Courses to Offer</label>
+          <div id="course-checkbox-list" style="max-height:240px;overflow-y:auto;border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-page);padding:4px;">
+            <div id="empty-course-msg" style="color:var(--text-muted);font-size:13px;text-align:center;padding:14px;">Please select Programme, Level, and Semester above to load courses.</div>
+            <div id="selectAllContainer" style="padding:10px 8px;border-bottom:1px solid var(--border-color);display:none;background:var(--color-primary-pale);">
+                <label style="cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:600;"><input type="checkbox" id="checkAllBtn" onchange="toggleAllCourses(this)"> <span>Select / Deselect All</span></label>
+            </div>
+            {% for c in all_courses %}
+            <label class="course-check-item" style="display:none;align-items:center;padding:10px 8px;border-bottom:1px solid var(--border-color);cursor:pointer;gap:10px;" 
+                   data-dept="{{ c.department }}" data-level="{{ c.level }}" data-sem="{{ c.semester }}">
+              <input type="checkbox" name="course_id" value="{{ c.pk }}" class="course-checkbox">
+              <div style="font-size:13px;flex-grow:1;display:flex;flex-direction:column;gap:2px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                   <span><strong>{{ c.course_code }}</strong></span>
+                   <span class="badge badge-info" style="font-size:10px;">{{ c.credit_units }} units</span>
+                </div>
+                <span style="opacity:0.8;font-size:12px;">{{ c.course_title }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">Default Class Capacity</label>
+          <input type="number" name="class_capacity" class="form-control" value="50" min="1" required>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-add')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-offerings-btn" style="display:flex;align-items:center;gap:8px;" disabled>
+            <i data-lucide="save" style="width:15px;height:15px;"></i> Save Offerings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════════
+   MODAL: Edit Offering
+   ════════════════════════════════════════════════════════════ #}
+<div id="modal-edit" class="modal-overlay" style="display:none;">
+  <div class="card" style="width:100%;max-width:560px;margin:20px;">
+    <div class="card-header flex-between">
+      <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="pencil" style="width:16px;height:16px;color:var(--color-primary);"></i>
+        Edit Offering — <span id="edit-course-label" style="color:var(--color-primary);margin-left:4px;"></span>
+      </span>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-edit')">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="academic_year" value="{{ academic_year }}">
+        <input type="hidden" name="offering_id" id="edit-offering-id">
+
+        <div class="grid-cols-2" style="gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Class Capacity</label>
+            <input type="number" name="class_capacity" id="edit-capacity" class="form-control" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Venue / Room</label>
+            <input type="text" name="venue" id="edit-venue" class="form-control" placeholder="e.g. LT 1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Assign Lecturer</label>
+          <select name="lecturer_id" id="edit-lecturer" class="form-control">
+            <option value="">-- No Lecturer Assigned --</option>
+            {% for lec in all_lecturers %}
+            <option value="{{ lec.pk }}">{{ lec.get_full_name }} ({{ lec.username }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="grid-cols-2" style="gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Day of Week</label>
+            <select name="day_of_week" id="edit-day" class="form-control">
+              <option value="">-- No Schedule --</option>
+              <option value="monday">Monday</option>
+              <option value="tuesday">Tuesday</option>
+              <option value="wednesday">Wednesday</option>
+              <option value="thursday">Thursday</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input type="time" name="start_time" id="edit-start" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">End Time</label>
+          <input type="time" name="end_time" id="edit-end" class="form-control">
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit')">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="save" style="width:15px;height:15px;"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# ── Modal Styles & JS ────────────────────────────────────────── #}
+<style>
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(1,51,104,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+</style>
+<script>
+function openModal(id) {
+  document.getElementById(id).style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  document.body.style.overflow = '';
+}
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+function openEdit(pk, code, title, cap, lecId, venue, day, start, end) {
+  document.getElementById('edit-offering-id').value = pk;
+  document.getElementById('edit-course-label').textContent = code + ' — ' + title;
+  document.getElementById('edit-capacity').value  = cap;
+  document.getElementById('edit-venue').value     = venue;
+  document.getElementById('edit-day').value       = day;
+  document.getElementById('edit-start').value     = start;
+  document.getElementById('edit-end').value       = end;
+  const lecSel = document.getElementById('edit-lecturer');
+  if (lecId) {
+    for (let opt of lecSel.options) { if (opt.value == lecId) { opt.selected = true; break; } }
+  } else {
+    lecSel.selectedIndex = 0;
+  }
+  openModal('modal-edit');
+}
+
+// Filter course checkboxes in Add modal
+function filterCourseCheckboxes() {
+  const prog  = document.getElementById('prog-filter-add').value;
+  const level = document.getElementById('level-filter-add').value;
+  const sem   = document.getElementById('sem-filter-add').value;
+  
+  const items = document.querySelectorAll('.course-check-item');
+  const emptyMsg = document.getElementById('empty-course-msg');
+  const selectAllContainer = document.getElementById('selectAllContainer');
+  const checkAllBtn = document.getElementById('checkAllBtn');
+  const submitBtn = document.getElementById('save-offerings-btn');
+  
+  let matchCount = 0;
+  
+  items.forEach(item => {
+    if (prog && level && sem && 
+        item.dataset.dept === prog && 
+        item.dataset.level === level && 
+        item.dataset.sem === sem) {
+      item.style.display = 'flex';
+      matchCount++;
+    } else {
+      item.style.display = 'none';
+      item.querySelector('input').checked = false;
+    }
+  });
+  
+  checkAllBtn.checked = false;
+
+  if (!prog || !level || !sem) {
+    emptyMsg.textContent = 'Please select Programme, Level, and Semester above to load courses.';
+    emptyMsg.style.display = 'block';
+    selectAllContainer.style.display = 'none';
+    submitBtn.disabled = true;
+  } else if (matchCount === 0) {
+    emptyMsg.textContent = 'No courses found in curriculum for this combination.';
+    emptyMsg.style.display = 'block';
+    selectAllContainer.style.display = 'none';
+    submitBtn.disabled = true;
+  } else {
+    emptyMsg.style.display = 'none';
+    selectAllContainer.style.display = 'block';
+    submitBtn.disabled = false;
+  }
+}
+
+function toggleAllCourses(chk) {
+  const items = document.querySelectorAll('.course-check-item');
+  items.forEach(item => {
+    if (item.style.display !== 'none') {
+      item.querySelector('input').checked = chk.checked;
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}Admission Applications — Registrar{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Admission Review</h2>
+        <p class="text-gray-600 dark:text-gray-400">Review and process new student applications.</p>
+    </div>
+    
+    <div class="flex gap-2">
+        <div class="bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 flex">
+            <a href="?status=submitted" class="px-4 py-2 rounded-md text-sm font-medium {% if current_status == 'submitted' %}bg-primary text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                Submitted ({{ counts.submitted }})
+            </a>
+            <a href="?status=under_review" class="px-4 py-2 rounded-md text-sm font-medium {% if current_status == 'under_review' %}bg-primary text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                Reviewing ({{ counts.under_review }})
+            </a>
+            <a href="?status=admitted" class="px-4 py-2 rounded-md text-sm font-medium {% if current_status == 'admitted' %}bg-primary text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                Admitted ({{ counts.admitted }})
+            </a>
+            <a href="?status=rejected" class="px-4 py-2 rounded-md text-sm font-medium {% if current_status == 'rejected' %}bg-primary text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                Rejected ({{ counts.rejected }})
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card overflow-hidden">
+    <div class="table-container">
+        <table class="w-full text-left">
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>App Number</th>
+                    <th>Program Choice</th>
+                    <th>Submission Date</th>
+                    <th>Fee Status</th>
+                    <th class="text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="avatar">{{ app.user.first_name|first|upper }}</div>
+                            <div>
+                                <div class="font-semibold">{{ app.user.get_full_name }}</div>
+                                <div class="text-xs text-muted">{{ app.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ app.application_number }}</code>
+                    </td>
+                    <td>
+                        <span class="text-sm">{{ app.first_choice_program }}</span>
+                    </td>
+                    <td>
+                        <span class="text-sm text-gray-500">{{ app.submitted_at|date:"M d, Y H:i" }}</span>
+                    </td>
+                    <td>
+                        {% if app.is_fee_paid %}
+                            <span class="badge badge-success">Paid</span>
+                        {% else %}
+                            <span class="badge badge-danger">Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <a href="{% url 'admissions:review_detail' app.pk %}" class="btn btn-sm btn-primary">
+                            Review <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="py-12 text-center text-gray-500">
+                        <div class="flex flex-col items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-12 h-12 opacity-20"></i>
+                            <p>No applications found in this category.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

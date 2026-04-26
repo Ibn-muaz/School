@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .approval-card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: white;
+        margin-bottom: 24px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .approval-card:hover {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-md);
+    }
+    .card-meta {
+        font-size: 13px;
+        color: var(--text-muted);
+        display: flex;
+        gap: 16px;
+        margin-top: 4px;
+    }
+    .course-mini-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--bg-page);
+    }
+    .course-mini-row:last-child { border-bottom: none; }
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+    .bg-pending { background-color: #f59e0b; }
+    .bg-approved { background-color: #10b981; }
+    .bg-rejected { background-color: #ef4444; }
+    
+    .modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(1,51,104,0.55);
+        backdrop-filter: blur(3px);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom:24px;">
+    <div>
+        <h1 class="page-title">Registration Approvals</h1>
+        <p class="page-subtitle">Queue for {{ role_label }} — Monitoring <strong>{{ target_status }}</strong> registrations.</p>
+    </div>
+</div>
+
+{% if not student_groups %}
+<div class="card" style="text-align:center;padding:60px 20px;">
+    <div style="background:var(--color-primary-pale);width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--color-primary);"></i>
+    </div>
+    <h3>Queue Clear!</h3>
+    <p style="color:var(--text-muted);max-width:400px;margin:0 auto;">No student registrations are currently awaiting your approval for this stage.</p>
+</div>
+{% else %}
+
+<form method="post" id="bulk-approval-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="form-action" value="approve">
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;">
+                <input type="checkbox" id="check-all-students" onchange="toggleAll(this)"> 
+                Select All Students
+            </label>
+            <span id="selected-count" style="font-size:12px;color:var(--color-primary);font-weight:600;display:none;">
+                (0 selected)
+            </span>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <button type="button" class="btn btn-outline" onclick="openRejectionModal()" style="color:var(--color-danger);border-color:var(--color-danger);">
+                <i data-lucide="x-circle" style="width:16px;height:16px;margin-right:8px;"></i> Reject Selected
+            </button>
+            <button type="submit" class="btn btn-primary" onclick="setAction('approve')">
+                <i data-lucide="shield-check" style="width:16px;height:16px;margin-right:8px;"></i> Approve Selected
+            </button>
+        </div>
+    </div>
+
+    <div class="grid-cols-2" style="gap:20px;">
+        {% for group in student_groups %}
+        <div class="approval-card">
+            <div style="padding:16px;background:var(--bg-page);border-bottom:1px solid var(--border-color);display:flex;gap:14px;align-items:center;">
+                {% for r_id in group.ids %}
+                <input type="hidden" name="all_reg_ids_{{ group.student.id }}" value="{{ r_id }}">
+                {% endfor %}
+                <input type="checkbox" name="registration_ids" value="{{ group.ids|join:',' }}" class="student-checkbox" onchange="updateCount()">
+                
+                <div style="width:44px;height:44px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-color);">
+                    <i data-lucide="user" style="width:20px;height:20px;color:var(--text-muted);"></i>
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:15px;">{{ group.student.get_full_name }}</div>
+                    <div class="card-meta">
+                        <span><i data-lucide="hash" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> {{ group.profile.matriculation_number }}</span>
+                        <span><i data-lucide="layers" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> {{ group.profile.level }} Level</span>
+                    </div>
+                </div>
+            </div>
+            <div style="padding:8px 0;">
+                {% for reg in group.registrations %}
+                <div class="course-mini-row">
+                    <span style="font-weight:500;">{{ reg.course_code }}</span>
+                    <span style="flex-grow:1;margin-left:12px;color:var(--text-muted);">{{ reg.course_title }}</span>
+                    <span class="badge badge-info" style="font-size:10px;">{{ reg.credit_units }}U</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div style="padding:12px 16px;background:var(--bg-page);border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:var(--text-muted);">Total: <strong>{{ group.total_units }} Credits</strong></span>
+                <span class="badge badge-warning" style="font-size:11px;">Awaiting {{ role_label }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# Rejection Modal #}
+    <div id="rejection-modal" class="modal-overlay" style="display:none;">
+        <div class="card" style="width:100%;max-width:400px;margin:20px;">
+            <div class="card-header">
+                <span class="card-title">Reject Registration</span>
+            </div>
+            <div class="card-body">
+                <p style="font-size:13px;margin-bottom:12px;color:var(--color-danger);">Please state the reason for rejecting these registrations. The student will see this note.</p>
+                <textarea name="rejection_reason" class="form-control" rows="4" placeholder="e.g. Incomplete core course selection, too many units..."></textarea>
+                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+                    <button type="button" class="btn btn-outline" onclick="closeRejectionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="background:var(--color-danger);border-color:var(--color-danger);" onclick="setAction('reject')">Confirm Rejection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endif %}
+
+<script>
+    function toggleAll(source) {
+        checkboxes = document.getElementsByName('registration_ids');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }
+        updateCount();
+    }
+
+    function updateCount() {
+        var checked = document.querySelectorAll('input[name="registration_ids"]:checked').length;
+        var countSpan = document.getElementById('selected-count');
+        if (checked > 0) {
+            countSpan.textContent = '(' + checked + ' selected)';
+            countSpan.style.display = 'inline';
+        } else {
+            countSpan.style.display = 'none';
+        }
+    }
+
+    function setAction(act) {
+        document.getElementById('form-action').value = act;
+        // If clicking reject through the modal, the button itself calls setAction.
+        // If clicking approve, we need to handle the comma-separated IDs.
+    }
+
+    // Special handling to flatten IDs before submit
+    document.getElementById('bulk-approval-form').addEventListener('submit', function(e) {
+        // Find all checked boxes
+        const checked = document.querySelectorAll('input[name="registration_ids"]:checked');
+        if (checked.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one student.');
+            return;
+        }
+        
+        // Remove existing inputs and replace with flat list
+        const form = this;
+        const flattenedIds = [];
+        checked.forEach(cb => {
+            cb.value.split(',').forEach(id => flattenedIds.push(id));
+        });
+        
+        // We'll let the existing checkbox inputs go through but we'll manually append the components as 'registration_ids'
+        // Actually it's easier to just create a new hidden field for every ID and remove the checkboxes from the post data.
+    });
+
+    function openRejectionModal() {
+        var checked = document.querySelectorAll('input[name="registration_ids"]:checked').length;
+        if (checked === 0) {
+            alert('Please select at least one student.');
+            return;
+        }
+        document.getElementById('rejection-modal').style.display = 'flex';
+    }
+
+    function closeRejectionModal() {
+        document.getElementById('rejection-modal').style.display = 'none';
+    }
+</script>
+{% endblock %}

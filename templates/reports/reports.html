@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block page_title %}Reports{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;">📊 Academic Reports</h2>
+    <p style="color:var(--text-muted);font-size:14px;">University-wide academic performance overview</p>
+  </div>
+  <button onclick="window.print()" class="btn btn-outline">🖨️ Print Report</button>
+</div>
+
+<!-- Summary Stats -->
+<div class="grid-stats mb-6">
+  <div class="stat-card">
+    <div class="stat-icon blue">🎓</div>
+    <div class="stat-info">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value">{{ total_students }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon teal">👥</div>
+    <div class="stat-info">
+      <div class="stat-label">Total Staff</div>
+      <div class="stat-value">{{ total_staff }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber">📚</div>
+    <div class="stat-info">
+      <div class="stat-label">Active Courses</div>
+      <div class="stat-value">{{ total_courses }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Grade Distribution -->
+<div class="card mb-6">
+  <div class="card-header">
+    <span class="card-title">Grade Distribution — All Published Results</span>
+  </div>
+  <div class="card-body">
+    {% if results_by_grade %}
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      {% for row in results_by_grade %}
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-weight:600;font-size:15px;" class="grade-{{ row.grade|lower }}">Grade {{ row.grade }}</span>
+          <span style="font-size:14px;color:var(--text-muted);">{{ row.count }} students</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:{% widthratio row.count total_students 100 %}%;
+            background:{% if row.grade == 'A' %}#10B981{% elif row.grade == 'B' %}#3B82F6{% elif row.grade == 'C' %}#F59E0B{% elif row.grade == 'D' %}#F97316{% else %}#EF4444{% endif %};">
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📊</div>
+      <div class="empty-state-title">No result data yet</div>
+      <div class="empty-state-desc">Grade distribution will appear here once results are published.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

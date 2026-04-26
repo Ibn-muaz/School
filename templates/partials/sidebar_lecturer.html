@@ -1,0 +1,39 @@
+{% load static %}
+{% with request.resolver_match.url_name as url_name %}
+
+<div class="sidebar-section-label">Main</div>
+<a href="{% url 'portal:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Dashboard</span><span class="nav-tooltip">Dashboard</span>
+</a>
+<a href="{% url 'portal:my_courses' %}" class="nav-item {% if url_name == 'my_courses' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="book-open" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Courses</span><span class="nav-tooltip">My Courses</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Scores</div>
+<a href="{% url 'portal:score_entry' %}" class="nav-item {% if url_name == 'score_entry' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="pencil-line" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Score Entry</span><span class="nav-tooltip">Score Entry</span>
+</a>
+<a href="{% url 'portal:scoresheet' %}" class="nav-item {% if url_name == 'scoresheet' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="file-spreadsheet" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Scoresheet</span><span class="nav-tooltip">Scoresheet</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Comms</div>
+<a href="{% url 'portal:announcements' %}" class="nav-item {% if url_name == 'announcements' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="megaphone" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Announcements</span><span class="nav-tooltip">Announcements</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">My Profile</span><span class="nav-tooltip">My Profile</span>
+</a>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);" onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Logout</span><span class="nav-tooltip">Logout</span>
+</a>
+{% endwith %}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
+        .container { background-color: white; padding: 20px; margin: 20px auto; max-width: 600px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background-color: #1a5f7a; color: white; padding: 20px; text-align: center; border-radius: 4px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 20px; }
+        .otp-box { background-color: #f0f8ff; padding: 15px; border-left: 4px solid #1a5f7a; margin: 15px 0; }
+        .otp-code { font-size: 32px; font-weight: bold; letter-spacing: 3px; text-align: center; color: #1a5f7a; }
+        .info { color: #666; font-size: 14px; margin: 10px 0; }
+        .footer { background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New OTP Code</h1>
+            <p style="margin: 10px 0 0 0;">YCHST Nursing School Admissions Portal</p>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ user.get_full_name }},</p>
+            
+            <p>You requested a new One-Time Password (OTP) for your YCHST Nursing School Admissions account. Here is your new code:</p>
+            
+            <div class="otp-box">
+                <div class="otp-code">{{ otp_code }}</div>
+            </div>
+            
+            <div class="info">
+                <strong>⏱️ Expiration:</strong> This OTP will expire in 10 minutes.
+            </div>
+            
+            <h3 style="color: #d32f2f;">⚠️ Security Notice:</h3>
+            <p style="color: #d32f2f; margin: 10px 0;">Never share your OTP with anyone. YCHST staff will never ask for your OTP via email or phone.</p>
+            
+            <p>If you did not request this code, please contact our admissions office immediately:</p>
+            <ul>
+                <li>Email: admissions@ychst.edu.ng</li>
+                <li>Phone: +234 (0) XXX XXXX XXXX</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2026 Yar'yaya College of Health Science & Technology. All rights reserved.</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

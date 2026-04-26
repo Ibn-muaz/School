@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block page_title %}Bursary Dashboard{% endblock %}
+{% block content %}
+<div class="welcome-banner">
+  <div>
+    <div class="welcome-title">Bursary Office <i data-lucide="banknote" class="inline-block w-6 h-6 ml-1"></i></div>
+    <div class="welcome-subtitle">Fee collection and financial records management</div>
+  </div>
+</div>
+<div class="grid-stats mb-6">
+  <div class="stat-card">
+    <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
+    <div class="stat-info"><div class="stat-label">Confirmed Payments</div><div class="stat-value">{{ total_paid_count }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+    <div class="stat-info"><div class="stat-label">Pending Payments</div><div class="stat-value">{{ pending_payments }}</div></div>
+  </div>
+</div>
+<div class="quick-actions mb-6">
+  <a href="{% url 'portal:fee_management' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="credit-card"></i></span><span class="quick-action-label">Fee Management</span></a>
+  <a href="{% url 'portal:reports' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="bar-chart-3"></i></span><span class="quick-action-label">Financial Reports</span></a>
+  <a href="{% url 'portal:announcements' %}" class="quick-action-btn"><span class="quick-action-icon"><i data-lucide="megaphone"></i></span><span class="quick-action-label">Announcements</span></a>
+</div>
+<div class="card">
+  <div class="card-header"><span class="card-title">Recent Payments</span><a href="{% url 'portal:fee_management' %}" class="btn btn-ghost btn-sm">View all →</a></div>
+  <div class="card-body" style="padding:0;">
+    {% if recent_payments %}
+    <div class="table-container" style="border:none;border-radius:0;">
+      <table>
+        <thead><tr><th>Student</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for p in recent_payments %}
+          <tr>
+            <td><div style="font-weight:500;">{{ p.student.get_full_name|default:p.student.username }}</div></td>
+            <td><strong>₦{{ p.amount|floatformat:0 }}</strong></td>
+            <td>{{ p.get_payment_method_display }}</td>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:12px;">{{ p.transaction_reference|truncatechars:18 }}</td>
+            <td>
+              {% if p.status == 'completed' %}<span class="badge badge-success">Paid</span>
+              {% elif p.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+              {% else %}<span class="badge badge-danger">{{ p.get_status_display }}</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty-state"><div class="empty-state-icon">💰</div><div class="empty-state-title">No payments recorded yet</div></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

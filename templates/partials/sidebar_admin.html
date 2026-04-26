@@ -1,0 +1,31 @@
+{% with request.resolver_match.url_name as url_name %}
+<div class="sidebar-section-label">Administration</div>
+<a href="{% url 'portal:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Dashboard</span><span class="nav-tooltip">Dashboard</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Office Management</div>
+<a href="{% url 'portal:announcements' %}" class="nav-item {% if url_name == 'announcements' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="megaphone" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Broadcast News</span><span class="nav-tooltip">Announcements</span>
+</a>
+<a href="{% url 'portal:reports' %}" class="nav-item {% if url_name == 'reports' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="files" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Office Reports</span><span class="nav-tooltip">Reports</span>
+</a>
+<a href="{% url 'portal:support' %}" class="nav-item {% if url_name == 'support' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Support Helpdesk</span><span class="nav-tooltip">Support</span>
+</a>
+
+<div class="sidebar-section-label" style="margin-top:12px;">Account</div>
+<a href="{% url 'portal:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-circle" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Portal Profile</span><span class="nav-tooltip">Profile</span>
+</a>
+<a href="{% url 'portal:logout' %}" class="nav-item" style="color:rgba(255,100,100,0.8);" onclick="return confirm('Log out?')">
+  <span class="nav-icon"><i data-lucide="log-out" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Log Out</span><span class="nav-tooltip">Logout</span>
+</a>
+{% endwith %}

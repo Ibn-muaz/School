@@ -1,0 +1,113 @@
+{% extends base_template|default:"base.html" %}
+{% block page_title %}Hostel & Accommodation{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;">Hostel & Accommodation</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">On-campus accommodation information</p>
+  </div>
+</div>
+
+<div class="grid-cols-2 mb-6">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="building-2" style="width:15px;height:15px;color:var(--color-primary);"></i> Accommodation Status
+      </span>
+    </div>
+    <div class="card-body">
+      <div style="text-align:center;padding:24px 0;">
+        <div style="width:72px;height:72px;border-radius:var(--radius-xl);background:var(--color-primary-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i data-lucide="building-2" style="width:36px;height:36px;color:var(--color-primary);"></i>
+        </div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px;">No Accommodation Assigned</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Apply for hostel placement through the Student Affairs office or pay your hostel fee to be allocated a room.</div>
+        <a href="{% url 'portal:student_fees' %}" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
+          <i data-lucide="credit-card" style="width:16px;height:16px;"></i> Pay Hostel Fee
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="wallet" style="width:15px;height:15px;color:var(--color-primary);"></i> Hostel Fee
+      </span>
+    </div>
+    <div class="card-body">
+      {% if fee_structure %}
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-color);">
+          <span>Hostel Accommodation Fee</span><strong style="color:var(--color-primary);">₦{{ fee_structure.hostel_fee|floatformat:2 }}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-color);">
+          <span>Session</span><strong>{{ fee_structure.academic_year }}</strong>
+        </div>
+        <div style="padding:12px;background:var(--color-primary-pale);border-radius:var(--radius-md);display:flex;gap:10px;align-items:flex-start;">
+          <i data-lucide="info" style="width:15px;height:15px;color:var(--color-primary);flex-shrink:0;margin-top:1px;"></i>
+          <div style="font-size:12px;color:var(--color-primary);line-height:1.6;">
+            Pay the hostel fee from the <strong>School Fees</strong> page. After payment is confirmed, contact the Student Affairs office for room allocation.
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="alert-circle" style="width:40px;height:40px;margin-bottom:10px;color:var(--text-muted);"></i>
+        <div class="empty-state-title">No fee structure available</div>
+        <div class="empty-state-desc">Contact the Bursary office.</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+      <i data-lucide="clipboard-check" style="width:15px;height:15px;color:var(--color-primary);"></i> Hostel Rules & Information
+    </span>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:14px;">
+      <div>
+        <div style="font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <i data-lucide="list-checks" style="width:15px;height:15px;color:var(--color-primary);"></i> General Rules
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;color:var(--text-secondary);">
+          {% for rule in rules %}
+          <li style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="check" style="width:13px;height:13px;color:var(--color-success);flex-shrink:0;"></i> {{ rule }}
+          </li>
+          {% empty %}
+          <li style="display:flex;align-items:center;gap:8px;"><i data-lucide="check" style="width:13px;height:13px;color:var(--color-success);flex-shrink:0;"></i> Student ID card must be worn at all times</li>
+          <li style="display:flex;align-items:center;gap:8px;"><i data-lucide="check" style="width:13px;height:13px;color:var(--color-success);flex-shrink:0;"></i> Lights out at 11:00 PM</li>
+          <li style="display:flex;align-items:center;gap:8px;"><i data-lucide="check" style="width:13px;height:13px;color:var(--color-success);flex-shrink:0;"></i> No cooking inside rooms</li>
+          <li style="display:flex;align-items:center;gap:8px;"><i data-lucide="check" style="width:13px;height:13px;color:var(--color-success);flex-shrink:0;"></i> Visitors only between 8 AM – 6 PM</li>
+          <li style="display:flex;align-items:center;gap:8px;"><i data-lucide="check" style="width:13px;height:13px;color:var(--color-success);flex-shrink:0;"></i> Keep your room clean at all times</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <div style="font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <i data-lucide="phone" style="width:15px;height:15px;color:var(--color-primary);"></i> Contact
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;color:var(--text-secondary);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="building" style="width:14px;height:14px;color:var(--color-primary);flex-shrink:0;"></i>
+            <span><strong>Hostel Administrator:</strong> Student Affairs Office</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="phone" style="width:14px;height:14px;color:var(--color-primary);flex-shrink:0;"></i>
+            <span><strong>Phone:</strong> Available at ICT Office</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="clock" style="width:14px;height:14px;color:var(--color-primary);flex-shrink:0;"></i>
+            <span><strong>Office Hours:</strong> Mon–Fri, 8 AM – 4 PM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

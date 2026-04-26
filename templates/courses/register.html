@@ -1,0 +1,249 @@
+{% extends 'base_student.html' %}
+{% load static %}
+
+{% block page_title %}Course Registration{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registration-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .locked-state-card {
+        text-align: center;
+        padding: 60px 40px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+        border: 1px solid #fee2e2;
+    }
+
+    .locked-icon {
+        width: 80px;
+        height: 80px;
+        background: #fef2f2;
+        color: #ef4444;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin: 0 auto 25px;
+    }
+
+    .unit-counter-pill {
+        background: var(--light-blue-bg);
+        color: var(--primary-blue);
+        padding: 8px 20px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .course-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .course-table th {
+        text-align: left;
+        padding: 15px 20px;
+        background: #f8fafc;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+    }
+
+    .course-table td {
+        padding: 18px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+    .course-row:hover {
+        background: #fcfdfe;
+    }
+
+    .submit-bar {
+        position: sticky;
+        bottom: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 -10px 20px -5px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        border: 1px solid var(--border-color);
+    }
+
+    .checkbox-custom {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--primary-blue);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-header">
+    <div>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-dark);">Course Registration</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Academic Session: 2024/2025 · First Semester</p>
+    </div>
+    {% if fees_cleared %}
+        <div class="unit-counter-pill" id="unit-limit-pill">
+            <i class="fas fa-info-circle"></i>
+            Current Load: <span id="total-units-val">0</span> / 24 Units
+        </div>
+    {% endif %}
+</div>
+
+{% if not fees_cleared %}
+    <!-- Locked State for Debtors -->
+    <div class="locked-state-card">
+        <div class="locked-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Registration Locked</h2>
+        <p style="color: #64748b; max-width: 500px; margin: 0 auto 30px; line-height: 1.6;">
+            Institutional policy requires full fee clearance for the current session before academic registration.
+            Please visit the Bursary module to settle your outstanding balance.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            <a href="{% url 'portal:student_fees' %}" class="btn" style="background: var(--primary-blue); color: white; padding: 12px 30px; border-radius: 10px; font-weight: 700; text-decoration: none;">
+                <i class="fas fa-credit-card" style="margin-right: 8px;"></i> Settle Fees
+            </a>
+            <button onclick="window.print()" class="btn" style="background: #f1f5f9; color: #475569; padding: 12px 30px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer;">
+                Print Notification
+            </button>
+        </div>
+    </div>
+{% else %}
+    <!-- Active Registration Form -->
+    <form method="post" id="reg-form">
+        {% csrf_token %}
+        <input type="hidden" name="semester" value="first">
+        
+        <div class="card" style="padding: 0;">
+            <div class="card-header">
+                <span class="card-title">Available Courses ({{ profile.department|default:"Science" }})</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="course-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">Select</th>
+                            <th>Course Code</th>
+                            <th>Course Title</th>
+                            <th>Units</th>
+                            <th>Semester</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if available_courses %}
+                            {% for offering in available_courses %}
+                                {% with offering.course as c %}
+                                <tr class="course-row">
+                                    <td style="text-align: center;">
+                                        <input type="checkbox" name="courses" value="{{ c.course_code }}" 
+                                               id="course_{{ c.course_code }}" class="course-checkbox checkbox-custom"
+                                               data-units="{{ c.credit_units }}"
+                                               {% if c.course_code in registered_codes %}checked disabled{% endif %}
+                                               onchange="recalculateUnits()">
+                                    </td>
+                                    <td><span class="grade-badge" style="background: #f1f5f9; color: #475569; font-family: monospace;">{{ c.course_code }}</span></td>
+                                    <td style="font-weight: 600;">{{ c.course_title }}</td>
+                                    <td><strong>{{ c.credit_units }}</strong> Credits</td>
+                                    <td style="text-transform: capitalize;">{{ c.semester }}</td>
+                                    <td>
+                                        {% if c.course_code in registered_codes %}
+                                            <span class="paid-badge">Registered</span>
+                                        {% else %}
+                                            <span class="status-badge">Available</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="padding: 60px; text-align: center; color: var(--text-muted);">
+                                    No courses are currently available for registration.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="submit-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="font-size: 14px; font-weight: 600;">Total Selected: <span id="footer-units" style="color: var(--primary-blue);">0</span> Units</div>
+                <div id="unit-warning" style="display: none; color: #ef4444; font-size: 12px; font-weight: 700;">
+                    <i class="fas fa-exclamation-triangle"></i> Max Limit 24 Units
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="window.print()" class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                    Print Exam Slip
+                </button>
+                <button type="submit" id="submit-btn" class="btn" style="background: var(--primary-blue); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                    Complete Registration
+                </button>
+            </div>
+        </div>
+    </form>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function recalculateUnits() {
+    let total = 0;
+    const checkboxes = document.querySelectorAll('.course-checkbox:checked');
+    checkboxes.forEach(cb => {
+        total += parseInt(cb.dataset.units || 0);
+    });
+
+    document.getElementById('total-units-val').textContent = total;
+    document.getElementById('footer-units').textContent = total;
+
+    const warning = document.getElementById('unit-warning');
+    const submitBtn = document.getElementById('submit-btn');
+    const pill = document.getElementById('unit-limit-pill');
+
+    if (total > 24) {
+        warning.style.display = 'block';
+        pill.style.background = '#fef2f2';
+        pill.style.color = '#ef4444';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+    } else {
+        warning.style.display = 'none';
+        pill.style.background = 'var(--light-blue-bg)';
+        pill.style.color = 'var(--primary-blue)';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
+}
+
+// Initial run
+if (document.getElementById('total-units-val')) {
+    recalculateUnits();
+}
+</script>
+{% endblock %}

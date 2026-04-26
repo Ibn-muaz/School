@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block page_title %}Fee Management{% endblock %}
+{% block content %}
+<div class="flex-between mb-6">
+  <div>
+    <h2 style="font-size:24px;font-weight:700;color:var(--text-primary);">Bursary Overview</h2>
+    <p style="color:var(--text-muted);font-size:14px;">Institutional financial records & payment management</p>
+  </div>
+  <div class="flex gap-2">
+    <button onclick="window.print()" class="btn btn-outline"><i data-lucide="printer" class="w-4 h-4 mr-2"></i> Print Report</button>
+    <button class="btn btn-primary"><i data-lucide="download" class="w-4 h-4 mr-2"></i> Export CSV</button>
+  </div>
+</div>
+
+<!-- Financial Stats -->
+<div class="grid-stats mb-8">
+  <div class="stat-card">
+    <div class="stat-icon green"><i data-lucide="banknote"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Revenue (Paid)</div>
+      <div class="stat-value">₦{{ total_paid|floatformat:2 }}</div>
+      <div class="stat-trend up"><i data-lucide="trending-up"></i> Collected</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Pending Payments</div>
+      <div class="stat-value">₦{{ total_pending|floatformat:2 }}</div>
+      <div class="stat-trend"><i data-lucide="activity"></i> Awaiting Verification</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><i data-lucide="alert-circle"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Failed Transactions</div>
+      <div class="stat-value">₦{{ total_failed|floatformat:2 }}</div>
+    </div>
+  </div>
+</div>
+
+<form method="get" class="card mb-6">
+  <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <div class="form-group" style="margin:0;flex:1;min-width:240px;">
+      <label class="form-label" style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-muted);">Search Records</label>
+      <div style="position:relative;">
+        <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;color:var(--text-muted);"></i>
+        <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Student name, matric, or reference..." style="padding-left:38px;">
+      </div>
+    </div>
+    <div class="form-group" style="margin:0;width:160px;">
+      <label class="form-label" style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-muted);">Filter Status</label>
+      <select name="status" class="form-control">
+        <option value="">All Statuses</option>
+        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>✅ Paid</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>⏳ Pending</option>
+        <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>❌ Failed</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary" style="height:42px;padding:0 24px;">Filter Results</button>
+    <a href="{% url 'portal:fee_management' %}" class="btn btn-outline" style="height:42px;display:flex;align-items:center;">Reset</a>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-header flex-between">
+    <span class="card-title">Detailed Payment Ledger</span>
+    <span style="font-size:12px;color:var(--text-muted);">Showing last {{ payments|length }} records</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if payments %}
+    <div class="table-container" style="border:none;border-radius:0;">
+      <table>
+        <thead><tr><th>Student</th><th>Amount</th><th>Method</th><th>Reference</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td><strong>{{ p.student.get_full_name|default:p.student.username }}</strong><div style="font-size:11px;color:var(--text-muted);">{{ p.student.username }}</div></td>
+          <td><strong>₦{{ p.amount|floatformat:2 }}</strong></td>
+          <td>{{ p.get_payment_method_display }}</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">{{ p.transaction_reference|truncatechars:16 }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ p.payment_date|date:"d M Y" }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ p.verified_by.username|default:"—" }}</td>
+          <td>{% if p.status == 'completed' %}<span class="badge badge-success">✅ Paid</span>{% elif p.status == 'pending' %}<span class="badge badge-warning">⏳ Pending</span>{% else %}<span class="badge badge-danger">{{ p.get_status_display }}</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty-state p-12">
+      <div class="empty-state-icon"><i data-lucide="credit-card" style="width:48px;height:48px;color:var(--text-muted);"></i></div>
+      <div class="empty-state-title">No financial records found</div>
+      <p class="text-muted">Adjust your search or filters to see more results.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

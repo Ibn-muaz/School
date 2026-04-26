@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block page_title %}Sign In{% endblock %} — Sanga Portal</title>
+  <meta name="description" content="Sign in to Sanga University Management Portal">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+</head>
+<body>
+  {% block content %}{% endblock %}
+  <script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
