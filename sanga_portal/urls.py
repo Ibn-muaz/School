@@ -21,6 +21,7 @@ urlpatterns = [
     # Portal frontend (template-based)
     path('admissions/', include('admissions.urls')),
     path('hostel/', include('hostels.urls')),
+    path('clearance/', include('clearance.urls')),
     path('', include('portal.urls')),
 
     # REST API (preserved)

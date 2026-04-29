@@ -1,20 +1,31 @@
+"""
+Registrar admission decision views.
+====================================
+When a student is admitted:
+  1. ApplicationRecord.status → 'admitted'
+  2. User.role → 'student'
+  3. StudentClearance record created (status='pending_acceptance')
+  4. NO matric generated here — that happens after clearance approval
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
 from accounts.models import User, StudentProfile
-from accounts.matric_utils import generate_matriculation_number, get_department_code
 from admissions.models import ApplicationRecord, ApplicantProfile, AcademicHistory, AdmissionDocument
 from portal.decorators import role_required, login_required_portal
 from portal.utils import _audit
+from django.conf import settings
+
 
 @login_required_portal
-@role_required('registrar')
+@role_required('registrar', 'director')
 def registrar_application_list(request):
     """List all submitted applications for registrar review."""
     status_filter = request.GET.get('status', 'submitted')
     applications = ApplicationRecord.objects.filter(status=status_filter).select_related('user', 'profile').order_by('-submitted_at')
-    
+
     context = {
         'applications': applications,
         'current_status': status_filter,
@@ -27,12 +38,13 @@ def registrar_application_list(request):
     }
     return render(request, 'admissions/registrar/list.html', context)
 
+
 @login_required_portal
-@role_required('registrar')
+@role_required('registrar', 'director')
 def registrar_application_detail(request, pk):
     """Detailed view of a single application for review."""
     application = get_object_or_404(ApplicationRecord, pk=pk)
-    
+
     # Update status to under_review on first open if it's just submitted
     if application.status == 'submitted':
         application.status = 'under_review'
@@ -46,11 +58,19 @@ def registrar_application_detail(request, pk):
     }
     return render(request, 'admissions/registrar/detail.html', context)
 
+
 @login_required_portal
-@role_required('registrar')
+@role_required('registrar', 'director')
 @transaction.atomic
 def process_admission_decision(request, pk):
-    """Process the final admit/reject decision."""
+    """
+    Process the final admit/reject decision.
+
+    On admission:
+      - User.role → 'student'
+      - StudentClearance created (status='pending_acceptance')
+      - NO matric generated (matric comes after clearance approval)
+    """
     application = get_object_or_404(ApplicationRecord, pk=pk)
     decision = request.POST.get('decision')
     reason = request.POST.get('reason', '')
@@ -58,6 +78,8 @@ def process_admission_decision(request, pk):
     if decision == 'admit':
         # 1. Update application record
         application.status = 'admitted'
+        application.admission_decision = 'admitted'
+        application.admission_date = timezone.now()
         application.save()
 
         # 2. Promote User to Student
@@ -65,46 +87,51 @@ def process_admission_decision(request, pk):
         user.role = 'student'
         user.save()
 
-        # 3. Generate matriculation number based on department
-        try:
-            # Get department from application
-            program = application.first_choice_program
-            
-            # Generate matriculation number (format: YCHST/2025/2026/DEPT_CODE/###)
-            matric = generate_matriculation_number(
-                department=program,
-                academic_year='2025/2026'  # Update this yearly
-            )
-            
-            # Get department code for storing
-            dept_code = get_department_code(program)
-            
-        except ValueError as e:
-            messages.error(request, f"Error generating matriculation: {str(e)}")
-            return redirect('admissions:registrar_detail', pk=pk)
+        # 3. Create StudentClearance record (starts the clearance pipeline)
+        from clearance.models import StudentClearance, ClearanceStatusHistory
+        academic_year = getattr(settings, 'CURRENT_ACADEMIC_YEAR', '2025/2026')
 
-        # 4. Create StudentProfile with generated matriculation number
-        StudentProfile.objects.get_or_create(
-            user=user,
+        clearance, created = StudentClearance.objects.get_or_create(
+            student=user,
             defaults={
-                'matriculation_number': matric,
-                'program': application.first_choice_program,
-                'department': application.first_choice_program,
-                'faculty': 'Health Sciences',
-                'level': '100',
-                'admission_year': timezone.now().year,
-                'state_of_origin': application.profile.state_of_origin if hasattr(application, 'profile') else '',
-                'local_government': application.profile.lga if hasattr(application, 'profile') else '',
+                'academic_year': academic_year,
+                'status': 'pending_acceptance',
             }
         )
 
-        _audit(request, 'ADMISSION', 'ADMIT', application.pk, details=f"Admitted as {matric}")
-        messages.success(request, f"Applicant {user.get_full_name()} has been admitted! Matric: {matric}")
+        if created:
+            ClearanceStatusHistory.objects.create(
+                clearance=clearance,
+                old_status='',
+                new_status='pending_acceptance',
+                changed_by=request.user,
+                notes=f'Admission approved. Clearance pipeline started.',
+            )
+
+        # 4. Notify the student
+        from notifications.models import Notification
+        Notification.objects.create(
+            recipient=user,
+            title='🎉 Admission Confirmed!',
+            message=f'Congratulations! You have been admitted to YCHST. Please proceed to complete your clearance: pay the acceptance fee, upload documents, and await approval.',
+            notification_type='success',
+        )
+
+        _audit(request, 'ADMISSION', 'ADMIT', application.pk,
+               details=f'Admitted. Clearance pipeline created (no matric yet).')
+        messages.success(request,
+                         f'Applicant {user.get_full_name()} has been admitted! '
+                         f'Clearance pipeline started — matric will be assigned after clearance approval.')
 
     elif decision == 'reject':
         application.status = 'rejected'
+        application.admission_decision = 'rejected'
+        application.admission_date = timezone.now()
         application.save()
-        _audit(request, 'ADMISSION', 'REJECT', application.pk, details=f"Rejected: {reason}")
-        messages.warning(request, f"Application for {application.user.get_full_name()} has been rejected.")
+
+        _audit(request, 'ADMISSION', 'REJECT', application.pk,
+               details=f'Rejected: {reason}')
+        messages.warning(request,
+                         f'Application for {application.user.get_full_name()} has been rejected.')
 
     return redirect('admissions:registrar_list')

@@ -434,7 +434,7 @@ def registrar_dashboard(request):
 
 
 @login_required_portal
-@role_required('registrar')
+@role_required('registrar', 'director')
 def review_applications(request):
     """List applications for review"""
     from django.db.models import Q
@@ -452,7 +452,7 @@ def review_applications(request):
             Q(user__last_name__icontains=search)
         )
     
-    from .models import ApplicationRecord
+
     counts = {
         'submitted': ApplicationRecord.objects.filter(status='submitted').count(),
         'under_review': ApplicationRecord.objects.filter(status='under_review').count(),
@@ -471,7 +471,7 @@ def review_applications(request):
 
 
 @login_required_portal
-@role_required('registrar')
+@role_required('registrar', 'director')
 def review_application_detail(request, pk):
     """Detailed review of application"""
     application = get_object_or_404(ApplicationRecord, pk=pk)
@@ -499,7 +499,7 @@ def review_application_detail(request, pk):
 
 
 @login_required_portal
-@role_required('registrar')
+@role_required('registrar', 'director')
 @transaction.atomic
 def make_admission_decision(request, pk):
     """Make admission decision"""
@@ -516,32 +516,39 @@ def make_admission_decision(request, pk):
                 user.role = 'student'
                 user.save()
                 
-                # Generate matriculation number
-                try:
-                    matric = generate_matriculation_number(
-                        department=application.first_choice_program,
-                        academic_year='2025/2026'
+                # Create StudentClearance record (NOT matric)
+                from clearance.models import StudentClearance, ClearanceStatusHistory
+                academic_year = getattr(settings, 'CURRENT_ACADEMIC_YEAR', '2025/2026')
+                
+                clearance, created = StudentClearance.objects.get_or_create(
+                    student=user,
+                    defaults={
+                        'academic_year': academic_year,
+                        'status': 'pending_acceptance',
+                    }
+                )
+                
+                if created:
+                    ClearanceStatusHistory.objects.create(
+                        clearance=clearance,
+                        old_status='',
+                        new_status='pending_acceptance',
+                        changed_by=request.user,
+                        notes='Admission approved. Clearance pipeline started.',
                     )
-                    
-                    # Create student profile
-                    StudentProfile.objects.get_or_create(
-                        user=user,
-                        defaults={
-                            'matriculation_number': matric,
-                            'department': application.first_choice_program,
-                            'level': '100',
-                            'admission_year': timezone.now().year,
-                            'state_of_origin': application.profile.state_of_origin if hasattr(application, 'profile') else '',
-                            'local_government': application.profile.lga if hasattr(application, 'profile') else '',
-                        }
-                    )
-                except Exception as e:
-                    messages.error(request, f"Error generating matriculation: {str(e)}")
-                    return redirect('admissions:review_detail', pk=pk)
+                
+                # Notify student
+                from notifications.models import Notification
+                Notification.objects.create(
+                    recipient=user,
+                    title='🎉 Admission Confirmed!',
+                    message='Congratulations! You have been admitted. Please proceed to complete your clearance.',
+                    notification_type='success',
+                )
             
             # Save decision
             application.admission_decision = decision
-            application.status = f'admitted' if decision == 'admitted' else 'rejected' if decision == 'rejected' else 'waitlisted'
+            application.status = 'admitted' if decision == 'admitted' else 'rejected' if decision == 'rejected' else 'waitlisted'
             application.admission_date = timezone.now()
             form.save()
             application.save()

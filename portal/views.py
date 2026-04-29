@@ -21,6 +21,7 @@ from fees.models import FeePayment, FeeStructure
 from notifications.models import Notification
 from ict_director.models import AuditLog, GeneralPermission, OTPRecord
 from staff.models import CourseAllocation, Scoresheet
+from admissions.models import ApplicationRecord
 
 from .decorators import role_required, login_required_portal
 
@@ -169,6 +170,14 @@ def dashboard_view(request):
         except StudentProfile.DoesNotExist:
             profile = None
 
+        # Clearance status for dashboard
+        clearance = None
+        try:
+            from clearance.models import StudentClearance
+            clearance = user.clearance
+        except Exception:
+            pass
+
         fees_cleared, total_paid, total_due = _check_student_clearance(user)
         balance = max(0, total_due - total_paid)
         
@@ -183,8 +192,13 @@ def dashboard_view(request):
             is_read=False
         ).order_by('-created_at')[:5]
 
+        # Determine if student has matric (needed for fees/course reg gating)
+        has_matric = profile is not None and bool(profile.matriculation_number)
+
         context.update({
             'profile': profile,
+            'clearance': clearance,
+            'has_matric': has_matric,
             'registrations': registrations,
             'registration_count': registrations.count(),
             'total_units': sum(r.credit_units for r in registrations),
@@ -279,6 +293,9 @@ def dashboard_view(request):
             'recent_signups': User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).order_by('-date_joined'),
             'student_list': StudentProfile.objects.select_related('user').order_by('user__last_name')[:50],
             'staff_list': StaffProfile.objects.select_related('user').order_by('user__last_name')[:50],
+            'pending_admissions': ApplicationRecord.objects.filter(status='submitted').count(),
+            'total_admissions': ApplicationRecord.objects.filter(status='admitted').count(),
+            'total_applications': ApplicationRecord.objects.count(),
         })
         return render(request, 'dashboard/executive.html', context)
 
@@ -512,6 +529,15 @@ def update_biodata(request):
 def course_registration_view(request):
     user = request.user
     
+    # 0. Enforce Matric Number Dependency — must have matric before course reg
+    try:
+        student_profile = user.student_profile
+        if not student_profile.matriculation_number:
+            raise AttributeError
+    except (StudentProfile.DoesNotExist, AttributeError):
+        messages.error(request, 'You must complete clearance and receive your matric number before registering courses.')
+        return redirect('clearance:dashboard')
+
     # 1. Enforce Fee Clearance Dependency
     fees_cleared, total_paid, total_due = _check_student_clearance(user)
 
@@ -1013,10 +1039,17 @@ def manage_courses_view(request):
 def _check_student_clearance(user):
     """Utility to check if a student has cleared their fees for the session."""
     try:
-        from fees.models import FeeStructure, FeePayment
-        fee_structure = FeeStructure.objects.filter(is_active=True).first()
+        from fees.models import FeeStructure, FeePayment, FeeItem
         total_paid = sum(p.amount for p in FeePayment.objects.filter(student=user, status='completed'))
-        total_due = fee_structure.total_fee if fee_structure else 0
+
+        # Use dynamic FeeItems if available, else fall back to FeeStructure
+        fee_items = FeeItem.objects.filter(is_active=True, is_mandatory=True)
+        if fee_items.exists():
+            total_due = fee_items.aggregate(models.Sum('amount'))['amount__sum'] or 0
+        else:
+            fee_structure = FeeStructure.objects.filter(is_active=True).first()
+            total_due = fee_structure.total_fee if fee_structure else 0
+
         cleared = (total_paid >= total_due) and total_due > 0
         return cleared, total_paid, total_due
     except Exception:
@@ -1287,6 +1320,15 @@ def scoresheet_view(request):
 def student_fees_view(request):
     user = request.user
     
+    # Enforce Matric Number Dependency — must have matric before paying fees
+    try:
+        _profile = user.student_profile
+        if not _profile.matriculation_number:
+            raise AttributeError
+    except (StudentProfile.DoesNotExist, AttributeError):
+        messages.error(request, 'You must complete clearance and receive your matric number before paying school fees.')
+        return redirect('clearance:dashboard')
+
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'generate_invoice':
@@ -1329,9 +1371,18 @@ def student_fees_view(request):
         return redirect('portal:student_fees')
 
     payments = FeePayment.objects.filter(student=user).order_by('-payment_date')
-    fee_structure = FeeStructure.objects.filter(is_active=True).first()
     total_paid = sum(p.amount for p in payments if p.status == 'completed')
-    total_due = fee_structure.total_fee if fee_structure else 0
+
+    # Use dynamic FeeItems set by bursary (fallback to old FeeStructure)
+    from fees.models import FeeItem
+    fee_items = FeeItem.get_active_items()
+
+    if fee_items.exists():
+        total_due = FeeItem.get_total()
+    else:
+        fee_structure = FeeStructure.objects.filter(is_active=True).first()
+        total_due = fee_structure.total_fee if fee_structure else 0
+
     balance = max(0, total_due - total_paid)
     
     # Pass pending invoice so we can show payment button
@@ -1339,11 +1390,12 @@ def student_fees_view(request):
 
     return render(request, 'fees/student_fees.html', {
         'payments': payments,
-        'fee_structure': fee_structure,
+        'fee_items': fee_items,
         'total_paid': total_paid,
         'total_due': total_due,
         'balance': balance,
         'pending_invoice': pending_invoice,
+        'fee_details': {'total_paid': total_paid, 'total_due': total_due, 'balance': balance},
         'page_title': 'Fee Payment',
     })
 
@@ -1510,6 +1562,81 @@ def session_receipt_view(request):
 @login_required_portal
 @role_required('bursary', 'registrar', 'ict_director')
 def fee_management_view(request):
+    """
+    Bursary fee management — two sections:
+    1. Fee Items (add/update/delete fee line items with fixed amounts)
+    2. Payment Ledger (view all student payments)
+    """
+    from fees.models import FeeItem
+
+    # ── Fee Item CRUD ────────────────────────────────────────────────────
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+
+        if action == 'add_fee_item':
+            name = request.POST.get('name', '').strip()
+            amount = request.POST.get('amount', '0')
+            category = request.POST.get('category', 'other')
+            description = request.POST.get('description', '').strip()
+            academic_year = request.POST.get('academic_year', '2025/2026')
+            is_mandatory = request.POST.get('is_mandatory') == 'on'
+            order = request.POST.get('display_order', '0')
+
+            if name and float(amount) > 0:
+                FeeItem.objects.create(
+                    name=name,
+                    amount=float(amount),
+                    category=category,
+                    description=description,
+                    academic_year=academic_year,
+                    is_mandatory=is_mandatory,
+                    display_order=int(order) if order else 0,
+                    created_by=request.user,
+                )
+                _audit(request, 'FEE_ITEM', 'ADD', request.user.pk,
+                       details=f'Added fee item: {name} = N{amount}')
+                messages.success(request, f'Fee item "{name}" added successfully.')
+            else:
+                messages.error(request, 'Please provide a valid name and amount.')
+
+        elif action == 'update_fee_item':
+            item_id = request.POST.get('item_id')
+            try:
+                item = FeeItem.objects.get(pk=item_id)
+                item.name = request.POST.get('name', item.name).strip()
+                item.amount = float(request.POST.get('amount', item.amount))
+                item.category = request.POST.get('category', item.category)
+                item.description = request.POST.get('description', '').strip()
+                item.is_mandatory = request.POST.get('is_mandatory') == 'on'
+                item.is_active = request.POST.get('is_active') == 'on'
+                item.display_order = int(request.POST.get('display_order', 0))
+                item.save()
+                _audit(request, 'FEE_ITEM', 'UPDATE', item.pk,
+                       details=f'Updated fee item: {item.name} = N{item.amount}')
+                messages.success(request, f'Fee item "{item.name}" updated.')
+            except FeeItem.DoesNotExist:
+                messages.error(request, 'Fee item not found.')
+
+        elif action == 'delete_fee_item':
+            item_id = request.POST.get('item_id')
+            try:
+                item = FeeItem.objects.get(pk=item_id)
+                item_name = item.name
+                item.delete()
+                _audit(request, 'FEE_ITEM', 'DELETE', request.user.pk,
+                       details=f'Deleted fee item: {item_name}')
+                messages.success(request, f'Fee item "{item_name}" deleted.')
+            except FeeItem.DoesNotExist:
+                messages.error(request, 'Fee item not found.')
+
+        return redirect('portal:fee_management')
+
+    # ── Query fee items ──────────────────────────────────────────────────
+    fee_items = FeeItem.objects.all().order_by('display_order', 'category', 'name')
+    fee_items_total = FeeItem.get_total()
+    active_items_count = FeeItem.objects.filter(is_active=True).count()
+
+    # ── Query payments ledger ────────────────────────────────────────────
     search = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
 
@@ -1529,6 +1656,10 @@ def fee_management_view(request):
     total_failed = FeePayment.objects.filter(status='failed').aggregate(Sum('amount'))['amount__sum'] or 0
 
     return render(request, 'fees/fee_management.html', {
+        'fee_items': fee_items,
+        'fee_items_total': fee_items_total,
+        'active_items_count': active_items_count,
+        'category_choices': FeeItem.CATEGORY_CHOICES,
         'payments': payments[:100],
         'search': search,
         'status_filter': status_filter,
@@ -1890,39 +2021,8 @@ def my_documents_view(request):
 @login_required_portal
 @role_required('student')
 def clearance_view(request):
-    """Student clearance / departmental clearance status."""
-    user = request.user
-    try:
-        profile = user.student_profile
-    except Exception:
-        profile = None
-
-    fee_structure = FeeStructure.objects.filter(is_active=True).first()
-    total_paid = sum(
-        p.amount for p in FeePayment.objects.filter(student=user, status='completed')
-    )
-    total_due = fee_structure.total_fee if fee_structure else 0
-    fees_cleared = total_paid >= total_due and total_due > 0
-
-    registered_count = CourseRegistration.objects.filter(
-        student=user, academic_year='2024/2025'
-    ).count()
-
-    clearance_items = [
-        {'label': 'School Fees Payment',       'done': fees_cleared,        'office': 'Bursary'},
-        {'label': 'Course Registration',        'done': registered_count > 0,'office': 'Academic Affairs'},
-        {'label': 'Library Clearance',          'done': False,               'office': 'Library'},
-        {'label': 'Laboratory Clearance',       'done': False,               'office': 'Lab Office'},
-        {'label': 'Departmental Clearance',     'done': False,               'office': 'HOD'},
-        {'label': 'Student Affairs Clearance',  'done': False,               'office': 'Student Affairs'},
-    ]
-
-    return render(request, 'students/clearance.html', {
-        'profile': profile,
-        'clearance_items': clearance_items,
-        'fees_cleared': fees_cleared,
-        'page_title': 'Clearance',
-    })
+    """Redirect to the new clearance module."""
+    return redirect('clearance:dashboard')
 
 
 @login_required_portal

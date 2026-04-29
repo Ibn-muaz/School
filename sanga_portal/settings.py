@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'otp',
     'admissions',
     'hostels',
+    'clearance',
 ]
 
 MIDDLEWARE = [

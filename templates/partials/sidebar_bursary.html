@@ -8,6 +8,10 @@
   <span class="nav-icon"><i data-lucide="credit-card" style="width:18px;height:18px;"></i></span>
   <span class="nav-label">Fee Management</span><span class="nav-tooltip">Fee Management</span>
 </a>
+<a href="{% url 'clearance:configure_fee' %}" class="nav-item {% if 'configure-fee' in request.path %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="settings" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Acceptance Fee Config</span><span class="nav-tooltip">Configure Acceptance Fee</span>
+</a>
 <a href="{% url 'portal:reports' %}" class="nav-item {% if url_name == 'reports' %}active{% endif %}">
   <span class="nav-icon"><i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i></span>
   <span class="nav-label">Financial Reports</span><span class="nav-tooltip">Financial Reports</span>

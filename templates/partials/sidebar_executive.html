@@ -13,6 +13,24 @@
   <span class="nav-label">Global Broadcast</span><span class="nav-tooltip">Broadcast</span>
 </a>
 
+<div class="sidebar-section-label" style="margin-top:12px;">Admissions Management</div>
+<a href="{% url 'admissions:review_applications' %}" class="nav-item {% if 'admissions' in request.path %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="user-plus" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Admission Review</span>
+  {% if pending_admissions_count > 0 %}
+    <span style="background:var(--color-danger); color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:auto;">{{ pending_admissions_count }}</span>
+  {% endif %}
+  <span class="nav-tooltip">Admission Review</span>
+</a>
+<a href="{% url 'clearance:review_list' %}" class="nav-item {% if 'clearance' in request.path %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="clipboard-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Clearance Review</span><span class="nav-tooltip">Clearance Review</span>
+</a>
+<a href="{% url 'portal:user_management' %}" class="nav-item {% if url_name == 'user_management' %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="users" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Student Records</span><span class="nav-tooltip">Student Records</span>
+</a>
+
 <div class="sidebar-section-label" style="margin-top:12px;">Financial Oversight</div>
 <a href="{% url 'portal:fee_management' %}" class="nav-item {% if url_name == 'fee_management' %}active{% endif %}">
   <span class="nav-icon"><i data-lucide="wallet" style="width:18px;height:18px;"></i></span>

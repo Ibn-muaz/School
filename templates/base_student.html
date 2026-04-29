@@ -257,6 +257,7 @@
                 <div class="nav-title">Menu</div>
                 <ul class="nav-list">
                     <li><a href="{% url 'portal:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a href="{% url 'clearance:dashboard' %}" class="nav-link {% if 'clearance' in request.path %}active{% endif %}"><i class="fas fa-clipboard-check"></i> Clearance</a></li>
                     <li><a href="{% url 'portal:student_fees' %}" class="nav-link {% if 'fee' in request.path %}active{% endif %}"><i class="fas fa-money-bill-wave"></i> Fees</a></li>
                     <li><a href="{% url 'portal:profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}"><i class="fas fa-user-circle"></i> Bio Data</a></li>
                     <li><a href="{% url 'portal:course_registration' %}" class="nav-link {% if 'registration' in request.path %}active{% endif %}"><i class="fas fa-check-double"></i> Course Reg</a></li>

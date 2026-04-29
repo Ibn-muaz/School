@@ -1,0 +1,262 @@
+{% extends base_template|default:"base.html" %}
+{% block page_title %}Clearance Detail{% endblock %}
+{% block content %}
+
+<div class="mb-6" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-size:20px;font-weight:700;">Clearance Review — {{ clearance.student.get_full_name }}</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">{{ clearance.student.email }} | {{ clearance.academic_year }}</p>
+  </div>
+  <a href="{% url 'clearance:review_list' %}" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;padding:8px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;color:var(--text-dark);">
+    <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to List
+  </a>
+</div>
+
+{# ── Status Banner ── #}
+<div class="card" style="margin-bottom:20px;border-left:4px solid {% if clearance.status == 'approved' %}#16a34a{% elif clearance.status == 'rejected' %}#dc2626{% elif clearance.status == 'pending_approval' %}#2563eb{% else %}#f59e0b{% endif %};">
+  <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      {% if clearance.status == 'approved' %}
+        <i data-lucide="check-circle-2" style="width:24px;height:24px;color:#16a34a;"></i>
+        <div>
+          <div style="font-weight:700;color:#16a34a;">Clearance Approved</div>
+          {% if clearance.matric_generated %}
+          <div style="font-size:13px;color:var(--text-muted);">Matric generated on {{ clearance.matric_generated_at|date:"M d, Y" }}</div>
+          {% endif %}
+        </div>
+      {% elif clearance.status == 'rejected' %}
+        <i data-lucide="x-circle" style="width:24px;height:24px;color:#dc2626;"></i>
+        <div>
+          <div style="font-weight:700;color:#dc2626;">Clearance Rejected</div>
+          <div style="font-size:13px;color:#b91c1c;">{{ clearance.rejection_reason }}</div>
+        </div>
+      {% elif clearance.status == 'pending_approval' %}
+        <i data-lucide="clock" style="width:24px;height:24px;color:#2563eb;"></i>
+        <div>
+          <div style="font-weight:700;color:#2563eb;">Pending Your Approval</div>
+          <div style="font-size:13px;color:var(--text-muted);">All documents uploaded, ready for review.</div>
+        </div>
+      {% else %}
+        <i data-lucide="alert-triangle" style="width:24px;height:24px;color:#f59e0b;"></i>
+        <div>
+          <div style="font-weight:700;color:#92400e;">{{ clearance.get_status_display }}</div>
+          <div style="font-size:13px;color:var(--text-muted);">Student is still completing requirements.</div>
+        </div>
+      {% endif %}
+    </div>
+    <div>
+      {% if clearance.acceptance_fee_paid %}
+        <span class="badge" style="background:#dcfce7;color:#166534;margin-right:8px;">Fee Paid: ₦{{ clearance.acceptance_fee_amount|floatformat:0 }}</span>
+      {% endif %}
+      {% if clearance.matric_locked %}
+        <span class="badge" style="background:#fef3c7;color:#92400e;">🔒 Matric Locked</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Application Info (if available) ── #}
+{% if application %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <span class="card-title">
+      <i data-lucide="file-text" style="width:15px;height:15px;color:var(--color-primary);"></i>
+      Application Details
+    </span>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Application No.</div>
+        <div style="font-weight:600;font-size:14px;">{{ application.application_number }}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Program</div>
+        <div style="font-weight:600;font-size:14px;">{{ application.get_first_choice_program_display|default:application.first_choice_program }}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Admitted On</div>
+        <div style="font-weight:600;font-size:14px;">{{ application.admission_date|date:"M d, Y"|default:"—" }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── Documents Table ── #}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <span class="card-title">
+      <i data-lucide="folder-open" style="width:15px;height:15px;color:var(--color-primary);"></i>
+      Uploaded Documents
+    </span>
+    <span style="font-size:13px;color:var(--text-muted);">
+      {{ clearance.documents.count }} uploaded
+    </span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f8fafc;">
+          <th style="padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);">Document</th>
+          <th style="padding:10px 16px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);">Status</th>
+          <th style="padding:10px 16px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);">File</th>
+          <th style="padding:10px 16px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in doc_status %}
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:12px 16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                {% if item.verified %}background:#dcfce7;{% elif item.uploaded %}background:#dbeafe;{% elif item.rejected %}background:#fef2f2;{% else %}background:#f1f5f9;{% endif %}
+              ">
+                {% if item.verified %}
+                  <i data-lucide="check" style="width:14px;height:14px;color:#16a34a;"></i>
+                {% elif item.uploaded %}
+                  <i data-lucide="file" style="width:14px;height:14px;color:#2563eb;"></i>
+                {% elif item.rejected %}
+                  <i data-lucide="x" style="width:14px;height:14px;color:#dc2626;"></i>
+                {% else %}
+                  <i data-lucide="file-question" style="width:14px;height:14px;color:#94a3b8;"></i>
+                {% endif %}
+              </div>
+              <div>
+                <div style="font-weight:500;font-size:13px;">{{ item.label }}</div>
+                {% if item.rejected and item.doc.rejection_note %}
+                  <div style="font-size:11px;color:#dc2626;">{{ item.doc.rejection_note }}</div>
+                {% endif %}
+                {% if item.doc %}
+                  <div style="font-size:11px;color:var(--text-muted);">
+                    {{ item.doc.file_size|filesizeformat }} — uploaded {{ item.doc.uploaded_at|date:"M d, Y" }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td style="padding:12px 16px;text-align:center;">
+            {% if item.verified %}
+              <span class="badge" style="background:#dcfce7;color:#166534;">Verified</span>
+            {% elif item.uploaded %}
+              <span class="badge" style="background:#fef3c7;color:#92400e;">Pending</span>
+            {% elif item.rejected %}
+              <span class="badge" style="background:#fef2f2;color:#991b1b;">Rejected</span>
+            {% else %}
+              <span class="badge" style="background:#f1f5f9;color:#94a3b8;">Not Uploaded</span>
+            {% endif %}
+          </td>
+          <td style="padding:12px 16px;text-align:center;">
+            {% if item.doc %}
+              <a href="{{ item.doc.file.url }}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--color-primary,#0284c7);font-size:12px;font-weight:600;text-decoration:none;">
+                <i data-lucide="external-link" style="width:12px;height:12px;"></i> View
+              </a>
+            {% else %}
+              <span style="color:#94a3b8;font-size:12px;">—</span>
+            {% endif %}
+          </td>
+          <td style="padding:12px 16px;text-align:center;">
+            {% if item.uploaded and not clearance.matric_locked %}
+              <div style="display:flex;gap:6px;justify-content:center;">
+                {% if not item.verified %}
+                <form method="post" action="{% url 'clearance:verify_document' item.doc.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="verify">
+                  <button type="submit" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;background:#dcfce7;color:#166534;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">
+                    <i data-lucide="check" style="width:10px;height:10px;"></i> Verify
+                  </button>
+                </form>
+                <form method="post" action="{% url 'clearance:verify_document' item.doc.pk %}" style="display:inline;" onsubmit="var note=prompt('Rejection reason:');if(!note)return false;this.querySelector('[name=rejection_note]').value=note;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="reject">
+                  <input type="hidden" name="rejection_note" value="">
+                  <button type="submit" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;background:#fef2f2;color:#991b1b;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">
+                    <i data-lucide="x" style="width:10px;height:10px;"></i> Reject
+                  </button>
+                </form>
+                {% else %}
+                  <span style="color:#16a34a;font-size:11px;">✓ Done</span>
+                {% endif %}
+              </div>
+            {% else %}
+              <span style="color:#94a3b8;font-size:11px;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── Action Buttons ── #}
+{% if not clearance.matric_locked %}
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+  {% if clearance.status == 'pending_approval' and clearance.all_documents_verified %}
+  <form method="post" action="{% url 'clearance:approve' clearance.pk %}">
+    {% csrf_token %}
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;transition:transform 0.2s;"
+            onclick="return confirm('Approve clearance and generate matric number for {{ clearance.student.get_full_name }}?')">
+      <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
+      Approve & Generate Matric
+    </button>
+  </form>
+  {% elif clearance.status == 'pending_approval' and not clearance.all_documents_verified %}
+  <div style="background:#fffbeb;padding:12px 20px;border-radius:8px;display:flex;align-items:center;gap:10px;">
+    <i data-lucide="alert-triangle" style="width:18px;height:18px;color:#d97706;"></i>
+    <span style="font-size:13px;color:#92400e;">Please verify all documents before approving clearance.</span>
+  </div>
+  {% endif %}
+
+  {% if clearance.status in 'pending_approval,pending_documents' %}
+  <form method="post" action="{% url 'clearance:reject' clearance.pk %}" style="display:flex;gap:8px;align-items:end;">
+    {% csrf_token %}
+    <input type="text" name="reason" placeholder="Rejection reason (required)" required
+           style="padding:10px 14px;border:1px solid #fca5a5;border-radius:8px;font-size:13px;min-width:300px;">
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;"
+            onclick="return confirm('Reject clearance for {{ clearance.student.get_full_name }}?')">
+      <i data-lucide="x-circle" style="width:16px;height:16px;"></i> Reject
+    </button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── Status History ── #}
+{% if history %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">
+      <i data-lucide="history" style="width:15px;height:15px;color:var(--color-primary);"></i>
+      Status History
+    </span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f8fafc;">
+          <th style="padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);">Date</th>
+          <th style="padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);">Changed By</th>
+          <th style="padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);">Change</th>
+          <th style="padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-muted);">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in history %}
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 16px;font-size:12px;color:var(--text-muted);">{{ entry.created_at|date:"M d, Y H:i" }}</td>
+          <td style="padding:10px 16px;font-size:13px;">{{ entry.changed_by.get_full_name|default:"System" }}</td>
+          <td style="padding:10px 16px;font-size:13px;">
+            <span style="color:#94a3b8;">{{ entry.old_status|default:"—" }}</span>
+            → <strong>{{ entry.new_status }}</strong>
+          </td>
+          <td style="padding:10px 16px;font-size:12px;color:var(--text-muted);">{{ entry.notes|truncatewords:20 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

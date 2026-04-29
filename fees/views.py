@@ -169,50 +169,9 @@ def verify_payment(request):
             profile.total_fees_paid += payment.amount
             profile.save(update_fields=['total_fees_paid'])
         except StudentProfile.DoesNotExist:
-            # If StudentProfile doesn't exist, create it with matriculation number
-            try:
-                # Get department from application or use a default
-                from admissions.models import ApplicationRecord
-                application = ApplicationRecord.objects.filter(
-                    user=payment.student,
-                    status__in=['admitted', 'paid']
-                ).first()
-                
-                department = None
-                if application:
-                    department = application.first_choice_program
-                
-                # Generate matriculation number if department is known
-                if department:
-                    matric = generate_matriculation_number(
-                        department=department,
-                        academic_year='2025/2026'
-                    )
-                else:
-                    matric = None
-                
-                # Create StudentProfile with matric number (if available)
-                profile_defaults = {
-                    'level': '100',
-                    'admission_year': timezone.now().year,
-                    'total_fees_paid': payment.amount,
-                }
-                
-                if matric:
-                    profile_defaults['matriculation_number'] = matric
-                    profile_defaults['department_code'] = department
-                    # We should probably lookup the full department name too
-                    dept_map = dict(StudentProfile.DEPT_CHOICES)
-                    profile_defaults['department'] = dept_map.get(department, department)
-                
-                profile = StudentProfile.objects.create(
-                    user=payment.student,
-                    **profile_defaults
-                )
-                
-            except Exception as e:
-                # Log error but don't fail the payment verification
-                print(f"Error creating StudentProfile: {str(e)}")
+            # Student should already have a profile at this point
+            # (created during clearance approval)
+            print(f"Warning: No StudentProfile found for {payment.student.username} during payment verification")
     
     return Response({
         'payment_id': payment.id,

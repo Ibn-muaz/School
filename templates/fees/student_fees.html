@@ -91,7 +91,7 @@
 <div class="flex-between mb-6" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
     <div>
         <h2 style="font-size: 20px; font-weight: 700; color: var(--text-dark);">School Fees Management</h2>
-        <p style="color: var(--text-muted); font-size: 14px;">Current Session: 2024/2025</p>
+        <p style="color: var(--text-muted); font-size: 14px;">Current Session: 2025/2026</p>
     </div>
     <button onclick="window.print()" class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
         <i class="fas fa-print" style="margin-right: 8px;"></i> Print Receipt
@@ -102,18 +102,21 @@
     <!-- Fee Summary -->
     <div class="card">
         <div class="card-header">
-            <span class="card-title"><i class="fas fa-file-invoice-dollar" style="color: var(--primary-blue);"></i> Fee breakdown</span>
+            <span class="card-title"><i class="fas fa-file-invoice-dollar" style="color: var(--primary-blue);"></i> Fee Breakdown</span>
         </div>
         <div class="card-body">
-            {% if fee_structure %}
-                <div class="fee-item-row"><span>Tuition Fee</span><strong>₦{{ fee_structure.tuition_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>Registration Fee</span><strong>₦{{ fee_structure.registration_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>Examination Fee</span><strong>₦{{ fee_structure.examination_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>Library Fee</span><strong>₦{{ fee_structure.library_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>Medical / Insurance</span><strong>₦{{ fee_structure.medical_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>Sports Fee</span><strong>₦{{ fee_structure.sports_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>Development Levy</span><strong>₦{{ fee_structure.development_fee|floatformat:2 }}</strong></div>
-                <div class="fee-item-row"><span>ICT / Technology Fee</span><strong>₦{{ fee_structure.other_fees|floatformat:2 }}</strong></div>
+            {% if fee_items %}
+                {% for item in fee_items %}
+                <div class="fee-item-row">
+                    <span>
+                        {{ item.name }}
+                        {% if item.description %}
+                        <span style="font-size:11px;color:var(--text-muted);display:block;">{{ item.description }}</span>
+                        {% endif %}
+                    </span>
+                    <strong>₦{{ item.amount|floatformat:2 }}</strong>
+                </div>
+                {% endfor %}
                 
                 <div class="fee-total-row">
                     <span style="font-weight: 700; color: var(--text-dark);">Total Amount</span>
@@ -161,7 +164,9 @@
                     </div>
                 {% else %}
                     <div style="margin-top: 25px; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 20px; border-radius: 12px; text-align: center;">
-                        <div style="font-size: 30px; margin-bottom: 10px;">✅</div>
+                        <div style="font-size: 30px; margin-bottom: 10px;">
+                            <i data-lucide="check-circle-2" style="width:32px;height:32px;color:#16a34a;"></i>
+                        </div>
                         <h3 style="color: #065f46; font-size: 16px; font-weight: 700;">Account Fully Cleared</h3>
                         <p style="color: #065f46; font-size: 13px; margin-top: 5px;">You have no outstanding school fees for this session.</p>
                     </div>
@@ -170,7 +175,7 @@
             {% else %}
                 <div style="text-align: center; padding: 40px;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px;"></i>
-                    <p style="color: var(--text-muted);">Fee structure hasn't been set for your level yet. Please contact the Bursary office.</p>
+                    <p style="color: var(--text-muted);">Fee structure hasn't been set yet. Please contact the Bursary office.</p>
                 </div>
             {% endif %}
         </div>

@@ -67,6 +67,95 @@ class FeeStructure(models.Model):
         return f"{self.program} - Level {self.level} ({self.academic_year})"
 
 
+class FeeItem(models.Model):
+    """
+    Dynamic fee line item managed by the Bursary.
+    The bursary can add, update, and delete these freely.
+    Students see these as individual rows in their fee breakdown.
+    The total of all active FeeItems = total amount a student must pay.
+    """
+    CATEGORY_CHOICES = [
+        ('tuition', 'Tuition & Academic'),
+        ('registration', 'Registration'),
+        ('examination', 'Examination'),
+        ('development', 'Development Levy'),
+        ('laboratory', 'Laboratory'),
+        ('library', 'Library'),
+        ('medical', 'Medical / Insurance'),
+        ('sports', 'Sports'),
+        ('hostel', 'Hostel / Accommodation'),
+        ('ict', 'ICT / Technology'),
+        ('acceptance', 'Acceptance Fee'),
+        ('other', 'Other Charges'),
+    ]
+
+    name = models.CharField(
+        max_length=150,
+        help_text="Display name for this fee item, e.g. 'Tuition Fee', 'Lab Coat Fee'"
+    )
+    amount = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        help_text="Fixed amount for this fee item in Naira"
+    )
+    category = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES, default='other',
+        help_text="Category for grouping in reports"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Optional description shown to students"
+    )
+    academic_year = models.CharField(
+        max_length=9, default='2025/2026',
+        help_text="Academic year this fee applies to"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Only active items are shown to students and counted in totals"
+    )
+    is_mandatory = models.BooleanField(
+        default=True,
+        help_text="Mandatory items are required for all students"
+    )
+    display_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order in which this item appears in the fee breakdown"
+    )
+
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='created_fee_items',
+        help_text="Bursary staff who created this item"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'category', 'name']
+        verbose_name = 'Fee Item'
+        verbose_name_plural = 'Fee Items'
+
+    def __str__(self):
+        return f"{self.name} - N{self.amount:,.2f} ({self.academic_year})"
+
+    @classmethod
+    def get_total(cls, academic_year=None):
+        """Sum of all active mandatory fee items for the given year."""
+        qs = cls.objects.filter(is_active=True, is_mandatory=True)
+        if academic_year:
+            qs = qs.filter(academic_year=academic_year)
+        total = qs.aggregate(models.Sum('amount'))['amount__sum']
+        return total or 0
+
+    @classmethod
+    def get_active_items(cls, academic_year=None):
+        """Return all active fee items for the given year."""
+        qs = cls.objects.filter(is_active=True)
+        if academic_year:
+            qs = qs.filter(academic_year=academic_year)
+        return qs
+
+
 class FeePayment(models.Model):
     """Fee payment model"""
     

@@ -1,0 +1,46 @@
+{% extends base_template|default:"base.html" %}
+{% block page_title %}Configure Acceptance Fee{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+  <h2 style="font-size:20px;font-weight:700;">Configure Acceptance Fee</h2>
+  <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Set the acceptance fee amount for new students. Changes apply to all pending clearances.</p>
+</div>
+
+<div style="max-width:500px;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">
+        <i data-lucide="settings" style="width:15px;height:15px;color:var(--color-primary);"></i>
+        Fee Settings
+      </span>
+    </div>
+    <div class="card-body">
+      <div style="background:#f8fafc;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="color:var(--text-muted);font-size:13px;">Current Amount</span>
+          <span style="font-size:20px;font-weight:800;">₦{{ current_amount|floatformat:2 }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--text-muted);font-size:12px;">Pending Clearances</span>
+          <span style="font-weight:600;">{{ pending_count }}</span>
+        </div>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;">New Acceptance Fee Amount (₦)</label>
+          <input type="number" name="amount" value="{{ current_amount }}" step="0.01" min="0" required
+                 style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:16px;font-weight:600;">
+        </div>
+        <button type="submit" style="width:100%;padding:12px;background:var(--color-primary,#0284c7);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;"
+                onclick="return confirm('Update acceptance fee for all pending clearances?')">
+          Update Fee Amount
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

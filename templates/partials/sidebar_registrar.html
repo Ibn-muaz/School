@@ -12,6 +12,10 @@
   {% endif %}
   <span class="nav-tooltip">Admission Review</span>
 </a>
+<a href="{% url 'clearance:review_list' %}" class="nav-item {% if 'clearance' in request.path %}active{% endif %}">
+  <span class="nav-icon"><i data-lucide="clipboard-check" style="width:18px;height:18px;"></i></span>
+  <span class="nav-label">Clearance Review</span><span class="nav-tooltip">Clearance Review</span>
+</a>
 <a href="{% url 'portal:fee_management' %}" class="nav-item {% if url_name == 'fee_management' %}active{% endif %}">
   <span class="nav-icon"><i data-lucide="users" style="width:18px;height:18px;"></i></span>
   <span class="nav-label">Student Records</span><span class="nav-tooltip">Student Records</span>
