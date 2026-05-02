@@ -14,6 +14,16 @@
   <link rel="stylesheet" href="{% static 'css/portal.css' %}">
 </head>
 <body>
+  {% if messages %}
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); background: white; border-left: 4px solid {% if message.tags == 'error' %}#f56565{% elif message.tags == 'success' %}#48bb78{% else %}#4299e1{% endif %}; min-width: 300px; animation: slideIn 0.3s ease;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   {% block content %}{% endblock %}
   <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();

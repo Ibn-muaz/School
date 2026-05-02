@@ -36,6 +36,14 @@ class ApplicationRecord(models.Model):
     application_number = models.CharField(max_length=20, unique=True, blank=True)
     academic_year = models.CharField(max_length=9, default='2025/2026')
     
+    APPLICATION_TYPE_CHOICES = [
+        ('utme', 'UTME (Undergraduate)'),
+        ('de', 'Direct Entry (DE)'),
+        ('sandwich', 'Sandwich Programme'),
+        ('diploma', 'Diploma / Certificate'),
+    ]
+    application_type = models.CharField(max_length=20, choices=APPLICATION_TYPE_CHOICES, default='utme')
+    
     # Status tracking
     current_step = models.PositiveIntegerField(default=1)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='not_started')

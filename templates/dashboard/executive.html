@@ -33,15 +33,25 @@
   <div class="stat-card">
     <div class="stat-icon green"><i data-lucide="banknote"></i></div>
     <div class="stat-info">
-      <div class="stat-label">Total Payments</div>
-      <div class="stat-value">{{ total_payments }}</div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">₦{{ total_paid_amount|floatformat:0 }}</div>
+      <div class="stat-trend up"><i data-lucide="check-circle"></i> {{ total_payments }} payments</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Pending Revenue</div>
+      <div class="stat-value">₦{{ total_pending_amount|floatformat:0 }}</div>
+      <div class="stat-trend"><i data-lucide="alert-circle"></i> Verification required</div>
     </div>
   </div>
   <div class="stat-card">
     <div class="stat-icon purple"><i data-lucide="user-plus"></i></div>
     <div class="stat-info">
       <div class="stat-label">Applications</div>
-      <div class="stat-value">{{ total_applications }} <span class="text-xs opacity-70">({{ pending_admissions }} pending)</span></div>
+      <div class="stat-value">{{ total_applications }}</div>
+      <div class="stat-trend"><i data-lucide="user-check"></i> {{ pending_admissions }} pending</div>
     </div>
   </div>
 </div>

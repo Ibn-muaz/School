@@ -289,6 +289,8 @@ def dashboard_view(request):
             'total_staff': StaffProfile.objects.count(),
             'total_courses': Course.objects.filter(is_active=True).count(),
             'total_payments': FeePayment.objects.filter(status='completed').count(),
+            'total_paid_amount': FeePayment.objects.filter(status='completed').aggregate(Sum('amount'))['amount__sum'] or 0,
+            'total_pending_amount': FeePayment.objects.filter(status='pending').aggregate(Sum('amount'))['amount__sum'] or 0,
             'all_users': User.objects.all().select_related('student_profile').order_by('-date_joined')[:100], 
             'recent_signups': User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).order_by('-date_joined'),
             'student_list': StudentProfile.objects.select_related('user').order_by('user__last_name')[:50],
@@ -1560,7 +1562,7 @@ def session_receipt_view(request):
 
 
 @login_required_portal
-@role_required('bursary', 'registrar', 'ict_director')
+@role_required('bursary', 'registrar', 'ict_director', 'director', 'provost')
 def fee_management_view(request):
     """
     Bursary fee management — two sections:

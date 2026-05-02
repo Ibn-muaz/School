@@ -10,70 +10,79 @@
       <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:50px; height:50px; background:white; border-radius:50%; padding:2px;">
       <div>
         <div class="auth-hero-logo-text">YCHST SANGA</div>
-        <div style="font-size:11px; opacity:0.8;">Admission Portal 2024/2025</div>
+        <div style="font-size:11px; opacity:0.8;">Admission Portal 2025/2026</div>
       </div>
     </div>
     
-    <h1 style="color:white; font-size:40px; margin-top:40px; font-weight:800; line-height:1.2;">
+    <h1 style="color:white; font-size:48px; margin-top:40px; font-weight:800; line-height:1.1; letter-spacing: -1px;">
       Your Future <br> Starts Here.
     </h1>
-    <p style="color:rgba(255,255,255,0.8); margin-top:20px; font-size:16px; line-height:1.6; max-width:400px;">
+    <p style="color:rgba(255,255,255,0.8); margin-top:24px; font-size:18px; line-height:1.6; max-width:440px;">
       Empowering the next generation of healthcare professionals with excellence and technology.
     </p>
     
-    <div style="margin-top:40px;">
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; color:rgba(255,255,255,0.9);">
-        <i data-lucide="check-circle" style="width:18px; height:18px; color:#48bb78;"></i>
-        <span>Accredited health science courses</span>
+    <div style="margin-top:48px; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display:flex; align-items:center; gap:16px; color:rgba(255,255,255,0.95);">
+        <div style="width:32px; height:32px; background:rgba(72,187,120,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#48bb78;">
+            <i data-lucide="check" style="width:18px; height:18px;"></i>
+        </div>
+        <span style="font-weight: 500;">Accredited health science courses</span>
       </div>
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; color:rgba(255,255,255,0.9);">
-        <i data-lucide="check-circle" style="width:18px; height:18px; color:#48bb78;"></i>
-        <span>Electronic admission processing</span>
+      <div style="display:flex; align-items:center; gap:16px; color:rgba(255,255,255,0.95);">
+        <div style="width:32px; height:32px; background:rgba(72,187,120,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#48bb78;">
+            <i data-lucide="check" style="width:18px; height:18px;"></i>
+        </div>
+        <span style="font-weight: 500;">Electronic admission processing</span>
       </div>
-      <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.9);">
-        <i data-lucide="check-circle" style="width:18px; height:18px; color:#48bb78;"></i>
-        <span>Secure document verification</span>
+      <div style="display:flex; align-items:center; gap:16px; color:rgba(255,255,255,0.95);">
+        <div style="width:32px; height:32px; background:rgba(72,187,120,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#48bb78;">
+            <i data-lucide="check" style="width:18px; height:18px;"></i>
+        </div>
+        <span style="font-weight: 500;">Secure document verification</span>
       </div>
     </div>
+
+    <!-- Decorative circles -->
+    <div style="position: absolute; width: 400px; height: 400px; border-radius: 50%; background: rgba(255,255,255,0.03); right: -100px; bottom: -100px; pointer-events: none;"></div>
   </div>
 
   <div class="auth-panel">
-    <div style="max-width: 440px; width: 100%; margin: 0 auto; padding: 20px;">
-      <h2 style="font-size: 28px; font-weight: 850; color: #1a202c; margin-bottom: 8px;">Admission Portal</h2>
-      <p style="color: #718096; margin-bottom: 40px;">Select your journey to begin the application process.</p>
+    <div style="max-width: 440px; width: 100%; margin: 0 auto;">
+      <h2 style="font-size: 32px; font-weight: 850; color: var(--text-primary); margin-bottom: 12px; letter-spacing: -0.5px;">Admission Portal</h2>
+      <p style="color: var(--text-muted); margin-bottom: 40px; font-size: 15px; line-height: 1.6;">Welcome! Please select your journey to begin the application process for the 2025/2026 session.</p>
 
       <div style="display: flex; flex-direction: column; gap: 20px;">
         <!-- New Application -->
         <a href="{% url 'admissions:signup' %}" style="text-decoration: none;">
-          <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s ease; cursor: pointer; background: white;" onmouseover="this.style.borderColor='#1a365d'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)';">
-            <div style="width: 56px; height: 56px; border-radius: 12px; background: #ebf8ff; display: flex; align-items: center; justify-content: center; color: #3182ce;">
-              <i data-lucide="plus-circle" style="width:30px; height:30px;"></i>
+          <div style="border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; background: white; box-shadow: var(--shadow-sm);" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)';">
+            <div style="width: 60px; height: 60px; border-radius: 14px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: var(--color-primary);">
+              <i data-lucide="user-plus" style="width:28px; height:28px;"></i>
             </div>
-            <div>
-              <h3 style="margin:0; font-size:18px; font-weight:700; color:#1a202c;">New application</h3>
-              <p style="margin:4px 0 0; font-size:13px; color:#718096;">Apply as a new student for the session.</p>
+            <div style="flex: 1;">
+              <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text-primary);">New application</h3>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted);">Apply as a new student for the session.</p>
             </div>
-            <i data-lucide="chevron-right" style="margin-left:auto; color:#cbd5e1;"></i>
+            <i data-lucide="arrow-right" style="color:var(--border-color); width: 20px; height: 20px;"></i>
           </div>
         </a>
 
         <!-- Returning / Login -->
         <a href="{% url 'portal:login' %}" style="text-decoration: none;">
-          <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s ease; cursor: pointer; background: white;" onmouseover="this.style.borderColor='#4a5568'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)';">
-            <div style="width: 56px; height: 56px; border-radius: 12px; background: #f7fafc; display: flex; align-items: center; justify-content: center; color: #4a5568;">
-              <i data-lucide="log-in" style="width:30px; height:30px;"></i>
+          <div style="border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; background: white; box-shadow: var(--shadow-sm);" onmouseover="this.style.borderColor='var(--text-secondary)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)';">
+            <div style="width: 60px; height: 60px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+              <i data-lucide="log-in" style="width:28px; height:28px;"></i>
             </div>
-            <div>
-              <h3 style="margin:0; font-size:18px; font-weight:700; color:#1a202c;">Already registered? Login</h3>
-              <p style="margin:4px 0 0; font-size:13px; color:#718096;">Continue your existing application.</p>
+            <div style="flex: 1;">
+              <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text-primary);">Already registered?</h3>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted);">Continue your existing application.</p>
             </div>
-            <i data-lucide="chevron-right" style="margin-left:auto; color:#cbd5e1;"></i>
+            <i data-lucide="arrow-right" style="color:var(--border-color); width: 20px; height: 20px;"></i>
           </div>
         </a>
       </div>
 
-      <div style="margin-top: 60px; text-align: center; border-top: 1px solid #edf2f7; padding-top: 24px;">
-        <p style="font-size: 12px; color: #a0aec0;">&copy; 2025 Yar'yaya College of Health Science and Technology Sanga</p>
+      <div style="margin-top: 60px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 24px;">
+        <p style="font-size: 12px; color: var(--text-muted);">&copy; 2025 Yar'yaya College of Health Science and Technology Sanga</p>
       </div>
     </div>
   </div>

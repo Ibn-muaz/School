@@ -23,6 +23,17 @@ class ApplicantSignupForm(forms.ModelForm):
         label="Confirm Password"
     )
     
+    app_type = forms.ChoiceField(
+        choices=[
+            ('utme', 'UTME (Undergraduate)'),
+            ('de', 'Direct Entry (DE)'),
+            ('sandwich', 'Sandwich Programme'),
+            ('diploma', 'Diploma / Certificate'),
+        ],
+        widget=forms.Select(attrs={'class': 'form-control', 'required': True}),
+        label="Application Type"
+    )
+    
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']

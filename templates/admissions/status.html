@@ -4,87 +4,106 @@
 {% block page_title %}Application Status{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto;">
-  <div class="card" style="overflow: hidden; border: none; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-     <div style="background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%); padding: 40px; text-align: center; color: white;">
+<div style="max-width: 900px; margin: 0 auto;">
+  <div class="card" style="overflow: hidden; border: none; box-shadow: var(--shadow-lg); border-radius: 24px;">
+     <div style="background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%); padding: 60px 40px; text-align: center; color: white; position: relative;">
         <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 2px solid rgba(255,255,255,0.2);">
             <i data-lucide="file-text" style="width:40px; height:40px;"></i>
         </div>
-        <h2 style="font-size: 28px; font-weight: 850; margin-bottom: 8px;">Admission Status</h2>
-        <p style="font-size: 15px; color: rgba(255,255,255,0.7);">Track your journey to Yar'yaya College of Health Science & Tech.</p>
+        <h2 style="font-size: 32px; font-weight: 850; margin-bottom: 8px; letter-spacing: -1px;">Admission Status</h2>
+        <p style="font-size: 16px; color: rgba(255,255,255,0.7); max-width: 400px; margin: 0 auto;">Track your journey to Yar'yaya College of Health Science & Tech.</p>
+        
+        <!-- Decorative element -->
+        <div style="position: absolute; width: 200px; height: 200px; background: rgba(255,255,255,0.03); border-radius: 50%; top: -50px; right: -50px;"></div>
      </div>
      
-     <div class="card-body" style="padding: 40px; background: #fff;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 1px solid #f1f5f9; padding-bottom: 30px;">
+     <div class="card-body" style="padding: 40px; background: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 30px; flex-wrap: wrap; gap: 20px;">
             <div>
-                <p style="font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Application ID</p>
-                <div style="font-size: 20px; font-weight: 900; color: #1e293b; font-family: 'JetBrains Mono', monospace;">{{ application.application_number }}</div>
+                <p style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px;">Application Reference</p>
+                <div style="font-size: 24px; font-weight: 900; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;">{{ application.application_number|default:"PENDING" }}</div>
             </div>
             <div style="text-align: right;">
-                <p style="font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Current Status</p>
-                <div style="display: inline-flex; align-items: center; padding: 6px 16px; border-radius: 999px; font-weight: 800; font-size: 13px; 
-                {% if application.status == 'submitted' or application.status == 'under_review' %} background: #fff9e6; color: #b45309; {% elif application.status == 'admitted' %} background: #ecfdf5; color: #059669; {% elif application.status == 'rejected' %} background: #fef2f2; color: #dc2626; {% else %} background: #f1f5f9; color: #475569; {% endif %}">
+                <p style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px;">Application Status</p>
+                <div style="display: inline-flex; align-items: center; padding: 8px 20px; border-radius: 999px; font-weight: 800; font-size: 13px; 
+                {% if application.status == 'submitted' or application.status == 'under_review' %} background: #fef3c7; color: #d97706; {% elif application.status == 'admitted' %} background: #dcfce7; color: #166534; {% elif application.status == 'rejected' %} background: #fee2e2; color: #991b1b; {% else %} background: #f1f5f9; color: #475569; {% endif %}">
                     {% if application.status == 'submitted' or application.status == 'under_review' %}
-                        <i data-lucide="clock" style="width:14px; height:14px; margin-right:6px;"></i> Under Review
+                        <i data-lucide="clock" style="width:14px; height:14px; margin-right:8px;"></i> Under Review
                     {% elif application.status == 'admitted' %}
-                        <i data-lucide="check-circle" style="width:14px; height:14px; margin-right:6px;"></i> Admitted
+                        <i data-lucide="check-circle" style="width:14px; height:14px; margin-right:8px;"></i> Admitted
                     {% elif application.status == 'rejected' %}
-                        <i data-lucide="x-circle" style="width:14px; height:14px; margin-right:6px;"></i> Not Admitted
+                        <i data-lucide="x-circle" style="width:14px; height:14px; margin-right:8px;"></i> Not Admitted
                     {% else %}
-                        <i data-lucide="file" style="width:14px; height:14px; margin-right:6px;"></i> Incomplete
+                        <i data-lucide="file-warning" style="width:14px; height:14px; margin-right:8px;"></i> Incomplete
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
-            <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="info" style="width:18px; height:18px; color:#3182ce;"></i> Details
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 20px; padding: 30px;">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 24px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i data-lucide="info" style="width:18px; height:18px; color:#3182ce;"></i> Details Summary
             </h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>
-                   <span style="font-size: 12px; color: #64748b;">Chosen Program:</span>
-                   <p style="font-size: 14px; font-weight: 650; color: #334155; margin-top: 2px;">{{ application.first_choice_program }}</p>
+            <div class="responsive-grid">
+                <div style="background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                   <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Program Choice</span>
+                   <p style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">{{ application.first_choice_program|default:"—" }}</p>
                 </div>
-                <div>
-                   <span style="font-size: 12px; color: #64748b;">Academic Session:</span>
-                   <p style="font-size: 14px; font-weight: 650; color: #334155; margin-top: 2px;">2024/2025</p>
+                <div style="background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                   <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Academic Session</span>
+                   <p style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">2025/2026</p>
                 </div>
-                <div>
-                   <span style="font-size: 12px; color: #64748b;">JAMB Ref:</span>
-                   <p style="font-size: 14px; font-weight: 650; color: #334155; margin-top: 2px;">{{ application.academic_info.jamb_reg_number }}</p>
+                <div style="background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                   <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">JAMB Number</span>
+                   <p style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">{{ application.academic_info.jamb_reg_number|default:"—" }}</p>
                 </div>
-                <div>
-                   <span style="font-size: 12px; color: #64748b;">Submitted On:</span>
-                   <p style="font-size: 14px; font-weight: 650; color: #334155; margin-top: 2px;">{{ application.submitted_at|date:"d M Y"|default:"Pending" }}</p>
+                <div style="background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                   <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Submitted On</span>
+                   <p style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">{{ application.submitted_at|date:"d M Y"|default:"Pending" }}</p>
                 </div>
             </div>
         </div>
 
         {% if application.status == 'submitted' or application.status == 'under_review' %}
-        <div style="margin-top: 30px; padding: 20px; background: #ebf8ff; border: 1px solid #bee3f8; border-radius: 12px; display: flex; gap: 16px; align-items: flex-start;">
-            <i data-lucide="bell" style="width:24px; height:24px; color:#3182ce; flex-shrink:0;"></i>
+        <div style="margin-top: 30px; padding: 24px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; display: flex; gap: 16px; align-items: flex-start;">
+            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #2563eb; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                <i data-lucide="bell" style="width:20px; height:20px;"></i>
+            </div>
             <div>
-               <p style="font-size: 14px; font-weight: 700; color: #2a4365; margin: 0;">Application Under Review</p>
-               <p style="font-size: 13px; color: #2c5282; margin-top: 4px;">The Registrar's office is currently processing your documents. You will receive an email/SMS notification once a decision is made.</p>
+               <p style="font-size: 15px; font-weight: 700; color: #1e3a8a; margin: 0;">Application Under Review</p>
+               <p style="font-size: 13px; color: #3b82f6; margin-top: 6px; line-height: 1.5;">The Registrar's office is currently processing your documents. You will receive an email/SMS notification once a decision is made. Stay positive!</p>
             </div>
         </div>
         {% elif application.status == 'admitted' %}
-        <div style="margin-top: 30px; text-align: center;">
-            <p style="font-size: 16px; color: #059669; font-weight: 700; margin-bottom: 20px;">Congratulations! You have been offered provisional admission.</p>
-            <button class="btn btn-primary" style="width: 100%; justify-content: center; height: 52px; font-weight: 800;">
-                <i data-lucide="download" style="width:20px; height:20px; margin-right:10px;"></i> Download Admission Letter
+        <div style="margin-top: 40px; text-align: center; border: 2px solid #dcfce7; padding: 40px; border-radius: 24px; background: #f0fdf4;">
+            <div style="width: 60px; height: 60px; background: #166534; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 20px;">
+                <i data-lucide="award" style="width:32px; height:32px;"></i>
+            </div>
+            <h3 style="font-size: 22px; color: #166534; font-weight: 900; margin-bottom: 12px;">Congratulations!</h3>
+            <p style="font-size: 15px; color: #15803d; font-weight: 600; margin-bottom: 30px; line-height: 1.6;">You have been offered provisional admission. Welcome to the Yar'yaya College family.</p>
+            <button class="btn btn-primary" style="width: 100%; justify-content: center; height: 56px; font-weight: 800; border-radius: 14px; font-size: 16px; box-shadow: 0 10px 15px -3px rgba(22, 101, 52, 0.2);">
+                <i data-lucide="download" style="width:20px; height:20px; margin-right:12px;"></i> Download Admission Letter
             </button>
-            <p style="font-size: 12px; color: #64748b; margin-top: 12px;">Next Step: Pay your Acceptance Fee in the portal.</p>
+            <p style="font-size: 12px; color: #15803d; margin-top: 16px; opacity: 0.8;">Next Step: Pay your Acceptance Fee in the portal to secure your spot.</p>
+        </div>
+        {% elif application.status == 'rejected' %}
+        <div style="margin-top: 40px; text-align: center; border: 1px solid #fee2e2; padding: 40px; border-radius: 24px; background: #fffafb;">
+            <div style="width: 60px; height: 60px; background: #991b1b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 20px;">
+                <i data-lucide="frown" style="width:32px; height:32px;"></i>
+            </div>
+            <h3 style="font-size: 22px; color: #991b1b; font-weight: 900; margin-bottom: 12px;">Admission Update</h3>
+            <p style="font-size: 14px; color: #b91c1c; margin-bottom: 0; line-height: 1.6;">We regret to inform you that you were not offered admission for this session. We appreciate your interest in our institution.</p>
         </div>
         {% endif %}
 
-        <div style="margin-top: 40px; text-align: center;">
-            <a href="{% url 'portal:logout' %}" style="font-size: 14px; color: #64748b; text-decoration: none; font-weight: 600;">
+        <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 30px;">
+            <a href="{% url 'admissions:landing' %}" style="font-size: 14px; color: var(--color-primary); text-decoration: none; font-weight: 700;">
+                <i data-lucide="chevron-left" style="width:16px; height:16px; vertical-align: middle;"></i> Return Home
+            </a>
+            <a href="{% url 'portal:logout' %}" style="font-size: 14px; color: var(--text-muted); text-decoration: none; font-weight: 600;">
                 <i data-lucide="log-out" style="width:16px; height:16px; margin-right:6px; vertical-align: middle;"></i> Sign Out
             </a>
         </div>
      </div>
   </div>
 </div>
-{% endblock %}

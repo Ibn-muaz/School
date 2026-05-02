@@ -78,14 +78,14 @@ def applicant_signup(request):
                 notification_type='info'
             )
             
-            # Generate and send OTP
+            # Send OTP
             otp_code = ''.join(random.choices(string.digits, k=6))
             OTPRecord.objects.create(
                 user=user,
                 otp_code=otp_code,
                 purpose='verification',
                 expires_at=timezone.now() + timedelta(minutes=10),
-                ip_address=request.META.get('REMOTE_ADDR'),
+                ip_address=_get_client_ip(request),
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
             
@@ -120,9 +120,9 @@ def applicant_signup(request):
 
 
 @require_http_methods(["GET", "POST"])
-def verify_otp(request):
+def verify_otp(request, email=None):
     """Verify email via OTP"""
-    email = request.GET.get('email') or request.POST.get('email')
+    email = email or request.GET.get('email') or request.POST.get('email')
     
     if not email:
         messages.error(request, "Email is required.")
@@ -167,14 +167,135 @@ def verify_otp(request):
             user.is_active = True
             user.save()
             
+            # Auto-login after verification
+            login(request, user)
+            
             _audit(request, 'ADMISSION', 'OTP_VERIFIED', user.pk, f"Email verified: {email}")
-            messages.success(request, "Email verified! You can now proceed with your application.")
-            return redirect('portal:login')
+            messages.success(request, "Email verified! Please proceed with your application.")
+            return redirect('admissions:wizard')
             
         except OTPRecord.DoesNotExist:
             messages.error(request, "Invalid OTP code. Please try again.")
     
     return render(request, 'admissions/verify_otp.html', {'email': email})
+
+
+@login_required_portal
+@role_required('applicant')
+@transaction.atomic
+def wizard_view(request):
+    """Unified view to handle multi-step admission wizard"""
+    user = request.user
+    application = get_object_or_404(ApplicationRecord, user=user)
+    
+    # Handle GET request: determine which step to show
+    if request.method == 'GET':
+        step = request.GET.get('step')
+        if not step:
+            # Determine based on current status
+            if application.status == 'not_started': step = 1
+            elif application.status == 'profile_started': step = 1
+            elif application.status == 'profile_complete': step = 2
+            elif application.status == 'education_complete': step = 3
+            elif application.status == 'documents_started': step = 4
+            elif application.status == 'documents_complete': step = 5
+            else: step = application.current_step
+        
+        step = int(step)
+        template = f'admissions/wizard_step_{step}.html'
+        
+        # Prepare context for specific steps
+        context = {'application': application, 'step': step}
+        if step == 4:
+            context['uploaded_documents'] = application.documents.all()
+        elif step == 5:
+            context.update({
+                'profile': getattr(application, 'profile', None),
+                'academic': getattr(application, 'academic_info', None),
+                'documents': application.documents.all(),
+            })
+            
+        return render(request, template, context)
+    
+    # Handle POST request: save current step and proceed
+    elif request.method == 'POST':
+        step = int(request.POST.get('step', 1))
+        
+        if step == 1:
+            # Save Profile Info
+            profile, _ = ApplicantProfile.objects.get_or_create(application=application)
+            profile.gender = request.POST.get('gender')
+            profile.state_of_origin = request.POST.get('state')
+            profile.lga = request.POST.get('lga')
+            profile.save()
+            
+            user.date_of_birth = request.POST.get('dob')
+            user.address = request.POST.get('address')
+            user.save()
+            
+            application.status = 'profile_complete'
+            application.current_step = 2
+            application.save()
+            return redirect('/admissions/wizard/?step=2')
+            
+        elif step == 2:
+            # Save Academic Info
+            academic, _ = AcademicHistory.objects.get_or_create(application=application)
+            academic.jamb_reg_number = request.POST.get('jamb_reg')
+            academic.jamb_score = request.POST.get('jamb_score')
+            academic.save()
+            
+            application.status = 'education_complete'
+            application.current_step = 3
+            application.save()
+            return redirect('/admissions/wizard/?step=3')
+            
+        elif step == 3:
+            # Save Program Choices
+            application.first_choice_program = request.POST.get('program_1')
+            application.second_choice_program = request.POST.get('program_2')
+            application.status = 'documents_started'
+            application.current_step = 4
+            application.save()
+            return redirect('/admissions/wizard/?step=4')
+            
+        elif step == 4:
+            # Handle document uploads if any
+            if request.FILES:
+                from .models import ApplicationDocument
+                doc_map = {
+                    'doc_passport': 'passport_photo',
+                    'doc_jamb': 'jamb_result_slip',
+                    'doc_olevel': 'olevel_transcript',
+                    'doc_indigene': 'birth_certificate', # Using birth_certificate slot for indigene if needed
+                }
+                for field, doc_type in doc_map.items():
+                    if field in request.FILES:
+                        ApplicationDocument.objects.update_or_create(
+                            application=application,
+                            document_type=doc_type,
+                            defaults={'file': request.FILES[field], 'file_size': request.FILES[field].size}
+                        )
+
+            application.status = 'documents_complete'
+            application.current_step = 5
+            application.save()
+            return redirect('/admissions/wizard/?step=5')
+            
+        elif step == 5:
+            # Final Submission & Mock Payment
+            application.is_fee_paid = True
+            application.payment_date = timezone.now()
+            application.payment_reference = f"MOCK-PAY-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+            application.status = 'submitted'
+            application.submitted_at = timezone.now()
+            application.save()
+            
+            _audit(request, 'ADMISSION', 'SUBMITTED', application.pk)
+            messages.success(request, "Application submitted successfully! Our team will review it shortly.")
+            return redirect('admissions:submission_confirmation')
+            
+    return redirect('admissions:dashboard')
 
 
 def resend_otp(request):

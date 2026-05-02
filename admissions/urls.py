@@ -7,8 +7,9 @@ urlpatterns = [
     # Public/Applicant Routes
     path('', views.application_landing, name='landing'),
     path('signup/', views.applicant_signup, name='signup'),
-    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('verify-otp/<str:email>/', views.verify_otp, name='verify_otp'),
     path('resend-otp/', views.resend_otp, name='resend_otp'),
+    path('wizard/', views.wizard_view, name='wizard'),
     
     # Authenticated Applicant Routes
     path('dashboard/', views.applicant_dashboard, name='dashboard'),
